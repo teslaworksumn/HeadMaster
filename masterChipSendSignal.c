@@ -71,13 +71,132 @@ void low_isr(void)
 {
 }
 //******************************************************
+char RxBuffer[512];
+char CountL,CountH; ;16-bit counter
+    
+;******************************************************************************
+void receiveDMX(void)
+{
+_asm
+Main
+    call    Setup                   ;Setup Serial port and buffers
 
-char buffer[40]; //Assuming the DMX parsing code will output data to this array
-//char bufferStart;
+MainLoop
+    bsf     PORTB,RB0
+    bsf     PORTB,RB1
+    
+; First loop, synchronizing with the transmitter
+
+WaitBreak
+    btfsc   RCSTA,FERR
+    bra     GotBreak
+    btfss   RCSTA,OERR
+    bra     WaitBreak
+    bcf     RCSTA,CREN
+    bsf     RCSTA,CREN
+
+GotBreak
+    movf    RCREG,W                 ;Read the Receive buffer to clear the error condition
+
+
+;Second loop, waiting for the START code
+WaitForStart
+    btfss   PIR1,RCIF               ;Wait until a byte is correctly received
+    bra     WaitForStart
+    btfsc   RCSTA,FERR              ;Got a byte
+    bra     GotBreak
+    movf    RCREG,W
+
+; Check for the START code value, if it is not 0, ignore the rest of the frame
+    andlw   0xff
+    bnz     MainLoop                ;Ignore the rest of the frame if not zero 
+  
+
+
+; Init receive counter and buffer pointer        
+    clrf    CountL
+    clrf    CountH
+    lfsr    FSR0,RxBuffer
+
+; Third loop, receiving 512 bytes of data
+WaitForData
+    btfsc   RCSTA,FERR          ;If a new framing error is detected (error or short frame)
+    bra     MainLoop            ; the rest of the frame is ignored and a new synchronization
+                                ; is attempted
+
+    btfss   PIR1,RCIF           ;Wait until a byte is correctly received
+    bra     WaitForData
+    movf    RCREG,W
+    bcf     PORTB,RB1           ;Green LED on when DMX is fully in
+
+
+MoveData
+    movwf   POSTINC0            ;Move the received data to the buffer 
+                                ; (auto-incrementing pointer)
+    incf    CountL,F            ;Increment 16-bit counter
+    btfss   STATUS,C
+    bra     WaitForData
+    incf    CountH,F
+
+    btfss   CountH,1            ;Check if 512 bytes of data received
+    bra     WaitForData
+
+;Return to Main Loop
+    bra     MainLoop            ;Return to main loop 
+
+;******************************************************************************
+
+; Setup Serial port and buffers
+Setup
+
+; Set PLL on
+    bsf     OSCTUNE,PLLEN
+    
+; Clear the receive buffer
+    lfsr    FSR0,RxBuffer
+CRxLoop
+    clrf    POSTINC0            ;Clear INDF register then increment pointer
+    incf    CountL,F
+    btfss   STATUS,C
+    bra     CRxLoop
+    incf    CountH,F
+
+    btfss   CountH,1
+    bra     CRxLoop  
+
+; Setup EUSART
+    bsf     TRISC,7         ;Allow the EUSART RX to control pin RC7
+    bsf     TRISC,6         ;Allow the EUSART TX to control pin RC6
+
+    bsf     BAUDCON,BRG16   ;Enable EUSART for 16-bit Asynchronous operation
+    clrf    SPBRGH
+
+    movlw   .31             ;Baud rate is 250KHz for 32MHz Osc. freq.
+    movwf   SPBRG
+    
+    movlw   0x04            ;Disable transmission
+    movwf   TXSTA           ;Enable transmission and CLEAR high baud rate
+
+    movlw   0x90
+    movwf   RCSTA           ;Enable serial port and reception
+
+; Setup I2C (MSSP) module
+;    movlw   0x08
+;    movwf   SSP1CON1        ;Configure MSSP for I2C Master Mode
+;    movlw   0x0F
+;    movwf   SSP1ADD         ;Set I2C baud rate to approximately 100kHz
+;    bsf     SSP1CON1,SSPEN  ;Enable MSSP module
+
+    return
+    END
+_endasm
+};
+
+//******************************************************
 char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
 
 /**
- * Sends 10 bytes of data from the buffer via I2C to the receiver. 
+ * Send 10 bytes of data from the buffer via I2C to the receiver. 
  * Reciever 0: bytes 0-9
  * Reciever 1: bytes 10-19
  * etc.
