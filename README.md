@@ -24,4 +24,4 @@ What's going to happen:
 
 Visit the [wiki] for information on DMX and other stuff.
 
-[wiki]: (https://github.com/teslaworksumn/HeadMaster/wiki)
+[wiki]: https://github.com/teslaworksumn/HeadMaster/wiki
