@@ -70,6 +70,7 @@ void low_isr(void)
 char RxBuffer[512];
 char CountL,CountH; //16-bit counter
 char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
+const int BYTES_PER_SLAVE = 8; //TODO: Change to number of DMX channels used per slave
 //******************************************************************************
 void setupDMX(void)
 {
@@ -78,9 +79,9 @@ _asm
     bsf     OSCTUNE,PLLEN
     
 ; Clear the receive buffer
-    lfsr    FSR0,RxBuffer
+    lfsr    FSR2,RxBuffer
 CRxLoop
-    clrf    POSTINC0            ;Clear INDF register then increment pointer
+    clrf    POSTINC2            ;Clear INDF register then increment pointer
     incf    CountL,F
     btfss   STATUS,C
     bra     CRxLoop
@@ -142,7 +143,7 @@ WaitForStart
 ; Init receive counter and buffer pointer        
     clrf    CountL
     clrf    CountH
-    lfsr    FSR0,RxBuffer
+    lfsr    FSR2,RxBuffer
 
 ; Third loop, receiving 512 bytes of data
 WaitForData
@@ -155,7 +156,7 @@ WaitForData
     movf    RCREG,W
 
 MoveData
-    movwf   POSTINC0            ;Move the received data to the buffer 
+    movwf   POSTINC2            ;Move the received data to the buffer 
                                 ; (auto-incrementing pointer)
     incf    CountL,F            ;Increment 16-bit counter
     btfss   STATUS,C
@@ -169,9 +170,9 @@ _endasm
 }
 
 /**
- * Send 10 bytes of data from the buffer via I2C to the indicated receiver. 
- * Reciever 0: bytes 0-9
- * Reciever 1: bytes 10-19
+ * Send BYTES_PER_SLAVE bytes of data from the buffer via I2C to the indicated receiver. 
+ * Reciever 0: bytes 0 to (BYTES_PER_SLAVE - 1)
+ * Reciever 1: bytes BYTES_PER_SLAVE to (2*BYTES_PER_SLAVE - 1)
  * etc.
 **/
 void sendI2C(int receiver)
@@ -181,9 +182,9 @@ void sendI2C(int receiver)
 	sendByte(slaveAddress[receiver]);
 	while(!PIR1bits.SSPIF) ;
 	
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < BYTES_PER_SLAVE; i++)
 	{
-		sendByte(RxBuffer[10*receiver + i]);
+		sendByte(RxBuffer[BYTES_PER_SLAVE*receiver + i]);
 		while(!PIR1bits.SSPIF) ;
 	};
 
@@ -212,14 +213,10 @@ void setup(void)
 	SSPCON1 = 0b00001000;
 
 	SSPCON2 = 0b00000000;
-
+	
 	//Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
 	SSPADD = 100;
 
-//For testing, remove for final code version
-	RxBuffer[0]=7;
-	slaveAddress[0] = 40;
-//End test
 	PIR1bits.SSPIF = 0;
 
 	//INTCON |= 0xC0;
