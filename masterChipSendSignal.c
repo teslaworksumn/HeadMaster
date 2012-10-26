@@ -134,7 +134,7 @@ void setup(void)
 	SSPADD = 100;
 	
 	buffer[0]=7;
-	slaveAddress = 40;
+	slaveAddress[0] = 40;
 	PIR1bits.SSPIF = 0;
 
 	//INTCON |= 0xC0;
