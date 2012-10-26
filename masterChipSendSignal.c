@@ -50,6 +50,9 @@
 void high_isr(void);
 void low_isr(void);
 
+void sendI2C(int receiver);
+void sendByte(char data);
+
 #pragma code high_isr_entry=8
 void high_isr_entry(void)
 {
