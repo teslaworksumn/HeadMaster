@@ -95,7 +95,7 @@ void sendI2C(int receiver)
 	
 	for (i = 0; i < 10; ++i)
 	{
-		sendByte(buffer[10*receiver + i];
+		sendByte(buffer[10*receiver + i]);
 		while(!PIR1bits.SSPIF) ;
 	};
 
