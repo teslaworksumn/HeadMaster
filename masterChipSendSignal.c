@@ -13,9 +13,10 @@
  *		Not strictly necessary for functionality, but may be nice for best practice
 */
 
-#include <p18f14k50.h>
+#include <p18f2620.h>
 
 //config from dmx code ******************************************************
+/*
 #pragma config CPUDIV = NOCLKDIV
 #pragma config USBDIV = OFF
 #pragma config FOSC = HS
@@ -44,6 +45,7 @@
 #pragma config EBTR1 = OFF
 #pragma config EBTRB = OFF
 #pragma config DEBUG = OFF
+ */
 
 void high_isr(void);
 void low_isr(void);
