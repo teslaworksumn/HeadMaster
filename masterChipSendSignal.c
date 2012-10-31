@@ -13,9 +13,10 @@
  *		Not strictly necessary for functionality, but may be nice for best practice
 */
 
-#include <p18f14k50.h>
+#include <p18f2620.h>
 
 //config from dmx code ******************************************************
+/*
 #pragma config CPUDIV = NOCLKDIV
 #pragma config USBDIV = OFF
 #pragma config FOSC = HS
@@ -44,9 +45,13 @@
 #pragma config EBTR1 = OFF
 #pragma config EBTRB = OFF
 #pragma config DEBUG = OFF
+ */
 
 void high_isr(void);
 void low_isr(void);
+
+void sendI2C(int receiver);
+void sendByte(char data);
 
 #pragma code high_isr_entry=8
 void high_isr_entry(void)
@@ -84,14 +89,16 @@ char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
 **/
 void sendI2C(int receiver)
 {
+	int i = 0;
+	
 	SSPCON2bits.SEN=1;
 	while(!PIR1bits.SSPIF) ;
 	sendByte(slaveAddress[receiver]);
 	while(!PIR1bits.SSPIF) ;
 	
-	for (int i = 0; i < 10; i++)
+	for (i = 0; i < 10; ++i)
 	{
-		sendByte(buffer[10*receiver + i];
+		sendByte(buffer[10*receiver + i]);
 		while(!PIR1bits.SSPIF) ;
 	};
 
@@ -127,7 +134,7 @@ void setup(void)
 	SSPADD = 100;
 	
 	buffer[0]=7;
-	slaveAddress = 40;
+	slaveAddress[0] = 40;
 	PIR1bits.SSPIF = 0;
 
 	//INTCON |= 0xC0;
@@ -137,11 +144,13 @@ void setup(void)
 
 void main(void)
 {
+	int receiver = 0;
+	
 	setup();
 
 	while(1)
 	{
-		for (int receiver = 0; i < 4; i++)
+		for (receiver = 0; receiver < 4; ++receiver)
 		{
 			sendI2C(receiver);
 		};
