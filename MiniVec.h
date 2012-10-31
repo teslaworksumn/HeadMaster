@@ -3,5 +3,5 @@
  * Project: Animatronic heads
  */
 
-void MVAdd(char vector[], int vectorCount, int numberToAdd);
-void MVRightShift(char vector[], int vectorCount, int bitsToShift);
+void MVAdd(char vector[], int vectorCount, signed char numberToAdd);
+void MVRightShift(char vector[], int vectorCount, char bitsToShift);

@@ -13,6 +13,7 @@
  *		Not strictly necessary for functionality, but may be nice for best practice
 */
 
+#include "MiniVec.h"
 #include <p18f2620.h>
 
 //config from dmx code ******************************************************
