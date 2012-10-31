@@ -51,6 +51,7 @@
 void high_isr(void);
 void low_isr(void);
 
+void mapDmxToServo(char *dmx, char numberToMap);
 void sendI2C(int receiver);
 void sendByte(char data);
 
@@ -81,6 +82,12 @@ void low_isr(void)
 char buffer[40]; //Assuming the DMX parsing code will output data to this array
 //char bufferStart;
 char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
+
+void mapDmxToServo(char *dmx, char numberToMap)
+{
+    MVRightShift(dmx, numberToMap, 1);
+    MVAdd(dmx, numberToMap, 30);
+}
 
 /**
  * Sends 10 bytes of data from the buffer via I2C to the receiver. 
