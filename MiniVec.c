@@ -4,7 +4,7 @@
  *	Unroll all functions for maximum performance benefit
  */
 
-void MVAdd(char vector[], int vectorCount, signed char numberToAdd)
+void MVAdd(char vector[], char vectorCount, char numberToAdd)
 {
     int index;
     for (index = 0; index < vectorCount; ++index) {
@@ -12,10 +12,10 @@ void MVAdd(char vector[], int vectorCount, signed char numberToAdd)
     }
 }
 
-void MVRightShift(char vector[], int vectorCount, int bitsToShift)
+void MVRightShift(char vector[], char vectorCount, char bitsToShift)
 {
     int index;
     for (index = 0; index < vectorCount; ++index) {
-	vector[index] >> bitsToShift;
+	vector[index] = vector[index] >> bitsToShift;
     }
 }
