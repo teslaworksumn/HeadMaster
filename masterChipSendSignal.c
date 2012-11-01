@@ -4,13 +4,9 @@
  *		This microcontroller receives a DMX input signal, buffers and distributes the data to 4 
  *		servo control boards via I2C.
  */
-
+ 
 /*Todo:
  * Verify pragmas
- * adapt dmx reciving code, waiting on github access
- * Check for off by 1 errors in indices
- * Double buffering of input data? 
- *		Not strictly necessary for functionality, but may be nice for best practice
 */
 
 #include <p18f2620.h>
@@ -57,13 +53,13 @@ void sendByte(char data);
 void high_isr_entry(void)
 {
     _asm goto high_isr _endasm
-}
+};
 
 #pragma code low_isr_entry=0x18
 void low_isr_entry(void)
 {
     _asm goto low_isr _endasm
-}
+};
 #pragma code
 
 #pragma interrupt high_isr
@@ -75,16 +71,113 @@ void high_isr(void)
 void low_isr(void)
 {
 }
-//******************************************************
-
-char buffer[40]; //Assuming the DMX parsing code will output data to this array
-//char bufferStart;
+//*****************************************************************************
+char RxBuffer[512];
+char CountL,CountH; //16-bit counter
 char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
+const int BYTES_PER_SLAVE = 8; //TODO: Change to number of DMX channels used per slave
+//******************************************************************************
+void setupDMX(void)
+{
+_asm
+; Set PLL on
+    bsf     OSCTUNE,PLLEN
+    
+; Clear the receive buffer
+    lfsr    FSR2,RxBuffer
+CRxLoop
+    clrf    POSTINC2            ;Clear INDF register then increment pointer
+    incf    CountL,F
+    btfss   STATUS,C
+    bra     CRxLoop
+    incf    CountH,F
+
+    btfss   CountH,1
+    bra     CRxLoop  
+
+; Setup EUSART
+    bsf     TRISC,7         ;Allow the EUSART RX to control pin RC7
+    bsf     TRISC,6         ;Allow the EUSART TX to control pin RC6
+
+    bsf     BAUDCON,BRG16   ;Enable EUSART for 16-bit Asynchronous operation
+    clrf    SPBRGH
+
+    movlw   .31             ;Baud rate is 250KHz for 32MHz Osc. freq.
+    movwf   SPBRG
+    
+    movlw   0x04            ;Disable transmission
+    movwf   TXSTA           ;Enable transmission and CLEAR high baud rate
+
+    movlw   0x90
+    movwf   RCSTA           ;Enable serial port and reception
+_endasm
+}
+
+void receiveDMX(void)
+{
+_asm
+MainLoop
+    bsf     PORTB,RB0
+    bsf     PORTB,RB1
+    
+; First loop, synchronizing with the transmitter
+
+WaitBreak
+    btfsc   RCSTA,FERR
+    bra     GotBreak
+    btfss   RCSTA,OERR
+    bra     WaitBreak
+    bcf     RCSTA,CREN
+    bsf     RCSTA,CREN
+
+GotBreak
+    movf    RCREG,W                 ;Read the Receive buffer to clear the error condition
+
+;Second loop, waiting for the START code
+WaitForStart
+    btfss   PIR1,RCIF               ;Wait until a byte is correctly received
+    bra     WaitForStart
+    btfsc   RCSTA,FERR              ;Got a byte
+    bra     GotBreak
+    movf    RCREG,W
+
+; Check for the START code value, if it is not 0, ignore the rest of the frame
+    andlw   0xff
+    bnz     MainLoop                ;Ignore the rest of the frame if not zero 
+  
+; Init receive counter and buffer pointer        
+    clrf    CountL
+    clrf    CountH
+    lfsr    FSR2,RxBuffer
+
+; Third loop, receiving 512 bytes of data
+WaitForData
+    btfsc   RCSTA,FERR          ;If a new framing error is detected (error or short frame)
+    bra     MainLoop            ; the rest of the frame is ignored and a new synchronization
+                                ; is attempted
+
+    btfss   PIR1,RCIF           ;Wait until a byte is correctly received
+    bra     WaitForData
+    movf    RCREG,W
+
+MoveData
+    movwf   POSTINC2            ;Move the received data to the buffer 
+                                ; (auto-incrementing pointer)
+    incf    CountL,F            ;Increment 16-bit counter
+    btfss   STATUS,C
+    bra     WaitForData
+    incf    CountH,F
+
+    btfss   CountH,1            ;Check if 512 bytes of data received
+    bra     WaitForData
+    return
+_endasm
+}
 
 /**
- * Sends 10 bytes of data from the buffer via I2C to the receiver. 
- * Reciever 0: bytes 0-9
- * Reciever 1: bytes 10-19
+ * Send BYTES_PER_SLAVE bytes of data from the buffer via I2C to the indicated receiver. 
+ * Reciever 0: bytes 0 to (BYTES_PER_SLAVE - 1)
+ * Reciever 1: bytes BYTES_PER_SLAVE to (2*BYTES_PER_SLAVE - 1)
  * etc.
 **/
 void sendI2C(int receiver)
@@ -96,7 +189,8 @@ void sendI2C(int receiver)
 	sendByte(slaveAddress[receiver]);
 	while(!PIR1bits.SSPIF) ;
 	
-	for (i = 0; i < 10; ++i)
+
+for (i = 0; i < 10; ++i)
 	{
 		sendByte(buffer[10*receiver + i]);
 		while(!PIR1bits.SSPIF) ;
@@ -116,8 +210,6 @@ void sendByte(char data)
 
 void setup(void)
 {
-//	bufferStart = 0;
-
 	TRISBbits.RB4 = 1;//SDA
 	TRISBbits.RB6 = 1;//SCL
 	//LATBbits.LATB4 = 1;
@@ -129,10 +221,10 @@ void setup(void)
 	SSPCON1 = 0b00001000;
 
 	SSPCON2 = 0b00000000;
-
+	
 	//Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
 	SSPADD = 100;
-	
+
 	buffer[0]=7;
 	slaveAddress[0] = 40;
 	PIR1bits.SSPIF = 0;
@@ -147,10 +239,12 @@ void main(void)
 	int receiver = 0;
 	
 	setup();
-
+	setupDMX();
 	while(1)
 	{
+
 		for (receiver = 0; receiver < 4; ++receiver)
+
 		{
 			sendI2C(receiver);
 		};
