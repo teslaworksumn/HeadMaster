@@ -1,21 +1,25 @@
-/* Master DMX distribution microcontroller code
- * Organization: Tesla Works
- * Project: Animatronic heads
- *		This microcontroller receives a DMX input signal, buffers and distributes the data to 4 
- *		servo control boards via I2C.
- */
+//
+// main.c
+// HeadMaster
+//
+// Created by Kevan Ahlquist on 10/20/12.
+// Copyright (c) 2012 Tesla Works. All rights reserved.
+//
 
-/*Todo:
- * Verify pragmas
- * adapt dmx reciving code, waiting on github access
- * Check for off by 1 errors in indices
- * Double buffering of input data? 
- *		Not strictly necessary for functionality, but may be nice for best practice
-*/
+#include <xc.h>
 
-#include <p18f2620.h>
+//
+// Global Variables
+//
 
-//config from dmx code ******************************************************
+char buffer[40]; //Assuming the DMX parsing code will output data to this array
+//char bufferStart;
+char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
+
+//
+// Device Configuration
+//
+
 /*
 #pragma config CPUDIV = NOCLKDIV
 #pragma config USBDIV = OFF
@@ -45,13 +49,28 @@
 #pragma config EBTR1 = OFF
 #pragma config EBTRB = OFF
 #pragma config DEBUG = OFF
- */
+*/
 
-void high_isr(void);
-void low_isr(void);
+//
+// Function Declarations
+//
 
 void sendI2C(int receiver);
 void sendByte(char data);
+
+//
+// Interrupts
+//
+
+#pragma interrupt high_isr
+void high_isr(void)
+{
+}
+
+#pragma interruptlow low_isr
+void low_isr(void)
+{
+}
 
 #pragma code high_isr_entry=8
 void high_isr_entry(void)
@@ -64,29 +83,19 @@ void low_isr_entry(void)
 {
     _asm goto low_isr _endasm
 }
+
+//
+// Code
+//
+
 #pragma code
 
-#pragma interrupt high_isr
-void high_isr(void)
-{
-}
-
-#pragma interruptlow low_isr
-void low_isr(void)
-{
-}
-//******************************************************
-
-char buffer[40]; //Assuming the DMX parsing code will output data to this array
-//char bufferStart;
-char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
-
-/**
+/*
  * Sends 10 bytes of data from the buffer via I2C to the receiver. 
  * Reciever 0: bytes 0-9
  * Reciever 1: bytes 10-19
  * etc.
-**/
+ */
 void sendI2C(int receiver)
 {
 	int i = 0;
