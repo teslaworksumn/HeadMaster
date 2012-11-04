@@ -105,8 +105,8 @@ void receiveDMX(void)
 MainLoop:
 //    bsf     PORTB,RB0
 //    bsf     PORTB,RB1
-	PORTBbits.RB0 = 1;
-	PORTBbits.RB1 = 1;
+    PORTBbits.RB0 = 1;
+    PORTBbits.RB1 = 1;
     
 //; First loop, synchronizing with the transmitter
 
@@ -118,15 +118,15 @@ MainLoop:
 //    bcf     RCSTA,CREN
 //    bsf     RCSTA,CREN
     while (!RCSTAbits.FERR) {
-		if (RCSTAbits.OERR) {
-			RCSTAbits.CREN = 0;
-			RCSTAbits.CREN = 1;
-		}
-	}
+        if (RCSTAbits.OERR) {
+            RCSTAbits.CREN = 0;
+            RCSTAbits.CREN = 1;
+        }
+    }
 
 GotBreak:
 //    movf    RCREG,W                 ;Read the Receive buffer to clear the error condition
-	inputBuffer = RCREG; 
+    inputBuffer = RCREG; 
 
 //;Second loop, waiting for the START code
 //WaitForStart:
@@ -136,20 +136,20 @@ GotBreak:
 //    bra     GotBreak
 //    movf    RCREG,W
     while (!PIR1bits.RCIF) ;
-	if (RCSTAbits.FERR) {
-		goto GotBreak;
-	}
-	else {
-		inputBuffer = RCREG;
-		break;
-	}
+    if (RCSTAbits.FERR) {
+        goto GotBreak;
+    }
+    else {
+        inputBuffer = RCREG;
+        break;
+    }
 
 
 //; Check for the START code value, if it is not 0, ignore the rest of the frame
 //    andlw   0xff
 //    bnz     MainLoop                ;Ignore the rest of the frame if not zero 
     if (inputBuffer) {
-    	goto MainLoop;
+        goto MainLoop;
     }
   
 //; Init receive counter and buffer pointer        
@@ -163,18 +163,18 @@ WaitForData:
 //    btfsc   RCSTA,FERR          ;If a new framing error is detected (error or short frame)
 //    bra     MainLoop            ; the rest of the frame is ignored and a new synchronization
 //                                ; is attempted
-	if (RCSTAbits.FERR) {
-		goto MainLoop;
-	}
+    if (RCSTAbits.FERR) {
+        goto MainLoop;
+    }
 	
 //    btfss   PIR1,RCIF           ;Wait until a byte is correctly received
 //    bra     WaitForData
 //    movf    RCREG,W
 	
-	while (!PIR1bits.RCIF) {
-		goto MainLoop;
-	}
-	inputBuffer = RCREG;
+    while (!PIR1bits.RCIF) {
+        goto MainLoop;
+    }
+    inputBuffer = RCREG;
 	
 //MoveData
 //    movwf   POSTINC2            ;Move the received data to the buffer 
@@ -189,7 +189,7 @@ WaitForData:
 //    bra     WaitForData
 //    return
     if (numReceivedBytes < 512) {
-    	goto WaitForData;
+        goto WaitForData;
     }
     return;
 //_endasm
@@ -203,71 +203,70 @@ WaitForData:
 **/
 void sendI2C(int receiver)
 {
-	int i = 0;
-	
-	SSPCON2bits.SEN=1;
-	while(!PIR1bits.SSPIF) ;
-	sendByte(slaveAddress[receiver]);
-	while(!PIR1bits.SSPIF) ;
-	
+    int i = 0;
 
-for (i = 0; i < 10; ++i)
-	{
-		sendByte(buffer[10*receiver + i]);
-		while(!PIR1bits.SSPIF) ;
-	};
+    SSPCON2bits.SEN=1;
+    while(!PIR1bits.SSPIF) ;
+    sendByte(slaveAddress[receiver]);
+    while(!PIR1bits.SSPIF) ;
 
-	SSPCON2bits.PEN=1;
-	PIR1bits.SSPIF = 0;
+    for (i = 0; i < 10; ++i)
+    {
+        sendByte(buffer[10*receiver + i]);
+        while(!PIR1bits.SSPIF) ;
+    };
+
+    SSPCON2bits.PEN=1;
+    PIR1bits.SSPIF = 0;
 }
 				 
 /* Adds a single byte of data to the send buffer, does not wait for send completion to return
  */
 void sendByte(char data)
 {
-	SSPBUF = data;
-	PIR1bits.SSPIF = 0;
+    SSPBUF = data;
+    PIR1bits.SSPIF = 0;
 }
 
 void setup(void)
 {
-	TRISBbits.RB4 = 1;//SDA
-	TRISBbits.RB6 = 1;//SCL
+    TRISBbits.RB4 = 1;//SDA
+    TRISBbits.RB6 = 1;//SCL
 	//LATBbits.LATB4 = 1;
 
-	//set up MSSP for master mode
-	SSPSTATbits.SMP = 1;
-	SSPSTATbits.CKE = 1;
+    //set up MSSP for master mode
+    SSPSTATbits.SMP = 1;
+    SSPSTATbits.CKE = 1;
 
-	SSPCON1 = 0b00001000;
+    SSPCON1 = 0b00001000;
 
-	SSPCON2 = 0b00000000;
+    SSPCON2 = 0b00000000;
 	
-	//Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
-	SSPADD = 100;
+    //Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
+    SSPADD = 100;
 
-	buffer[0]=7;
-	slaveAddress[0] = 40;
-	PIR1bits.SSPIF = 0;
+    buffer[0]=7;
+    slaveAddress[0] = 40;
+    PIR1bits.SSPIF = 0;
 
-	//INTCON |= 0xC0;
+    //INTCON |= 0xC0;
 
-	SSPCON1bits.SSPEN = 1;
+    SSPCON1bits.SSPEN = 1;
 }
 
 void main(void)
 {
-	int receiver = 0;
-	
-	setup();
-	setupDMX();
-	while(1)
-	{
+    int receiver = 0;
 
-		for (receiver = 0; receiver < 4; ++receiver)
+    setup();
+    setupDMX();
+    while(1)
+    {
 
-		{
-			sendI2C(receiver);
-		};
-	}	
+        for (receiver = 0; receiver < 4; ++receiver)
+
+        {
+            sendI2C(receiver);
+        };
+    }
 }
