@@ -88,8 +88,8 @@ void main(void)
     Setup();
 
     while (1) {
-	for (receiver = 0; receiver < 4; ++receiver) {
-	    sendI2C(receiver);
-	}
+        for (receiver = 0; receiver < 4; ++receiver) {
+            sendI2C(receiver);
+        }
     }
 }
