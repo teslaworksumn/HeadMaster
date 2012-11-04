@@ -46,7 +46,7 @@
 #pragma config EBTR1 = OFF
 #pragma config EBTRB = OFF
 #pragma config DEBUG = OFF
-*/
+ */
 
 //
 // Interrupts
@@ -62,36 +62,34 @@ __interrupt(high_priority) void HighPriorityInterrupt(void)
 
 void Setup(void)
 {
-	TRISBbits.RB4 = 1;//SDA
-	TRISBbits.RB6 = 1;//SCL
+    TRISBbits.RB4 = 1; //SDA
+    TRISBbits.RB6 = 1; //SCL
 
-	//set up MSSP for master mode
-	SSPSTATbits.SMP = 1;
-	SSPSTATbits.CKE = 1;
+    //set up MSSP for master mode
+    SSPSTATbits.SMP = 1;
+    SSPSTATbits.CKE = 1;
 
-	SSPCON1 = 0b00001000;
+    SSPCON1 = 0b00001000;
 
-	SSPCON2 = 0b00000000;
+    SSPCON2 = 0b00000000;
 
-	//Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
-	SSPADD = 100;
+    //Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
+    SSPADD = 100;
 
-	PIR1bits.SSPIF = 0;
+    PIR1bits.SSPIF = 0;
 
-	SSPCON1bits.SSPEN = 1;
+    SSPCON1bits.SSPEN = 1;
 }
 
 void main(void)
 {
-	int receiver = 0;
+    int receiver = 0;
 
-	Setup();
+    Setup();
 
-	while(1)
-	{
-		for (receiver = 0; receiver < 4; ++receiver)
-		{
-			sendI2C(receiver);
-		};
+    while (1) {
+	for (receiver = 0; receiver < 4; ++receiver) {
+	    sendI2C(receiver);
 	}
+    }
 }
