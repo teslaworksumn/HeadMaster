@@ -6,6 +6,7 @@
 // Copyright (c) 2012 Tesla Works. All rights reserved.
 //
 
+#include "I2C.h"
 #include <xc.h>
 
 //
@@ -13,7 +14,6 @@
 //
 
 char buffer[40]; //Assuming the DMX parsing code will output data to this array
-//char bufferStart;
 char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
 
 //
@@ -52,13 +52,6 @@ char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
 */
 
 //
-// Function Declarations
-//
-
-void sendI2C(int receiver);
-void sendByte(char data);
-
-//
 // Interrupts
 //
 
@@ -90,46 +83,10 @@ void low_isr_entry(void)
 
 #pragma code
 
-/*
- * Sends 10 bytes of data from the buffer via I2C to the receiver. 
- * Reciever 0: bytes 0-9
- * Reciever 1: bytes 10-19
- * etc.
- */
-void sendI2C(int receiver)
-{
-	int i = 0;
-	
-	SSPCON2bits.SEN=1;
-	while(!PIR1bits.SSPIF) ;
-	sendByte(slaveAddress[receiver]);
-	while(!PIR1bits.SSPIF) ;
-	
-	for (i = 0; i < 10; ++i)
-	{
-		sendByte(buffer[10*receiver + i]);
-		while(!PIR1bits.SSPIF) ;
-	};
-
-	SSPCON2bits.PEN=1;
-	PIR1bits.SSPIF = 0;
-}
-				 
-/* Adds a single byte of data to the send buffer, does not wait for send completion to return
- */
-void sendByte(char data)
-{
-	SSPBUF = data;
-	PIR1bits.SSPIF = 0;
-}
-
 void setup(void)
 {
-//	bufferStart = 0;
-
 	TRISBbits.RB4 = 1;//SDA
 	TRISBbits.RB6 = 1;//SCL
-	//LATBbits.LATB4 = 1;
 
 	//set up MSSP for master mode
 	SSPSTATbits.SMP = 1;
@@ -145,8 +102,6 @@ void setup(void)
 	buffer[0]=7;
 	slaveAddress[0] = 40;
 	PIR1bits.SSPIF = 0;
-
-	//INTCON |= 0xC0;
 
 	SSPCON1bits.SSPEN = 1;
 }
