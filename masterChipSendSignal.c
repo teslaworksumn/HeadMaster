@@ -81,38 +81,22 @@ const int BYTES_PER_SLAVE = 8; //TODO: Change to number of DMX channels used per
 //******************************************************************************
 void setupDMX(void)
 {
-_asm
-; Set PLL on
-    bsf     OSCTUNE,PLLEN
-    
-; Clear the receive buffer
-    lfsr    FSR2,RxBuffer
-CRxLoop
-    clrf    POSTINC2            ;Clear INDF register then increment pointer
-    incf    CountL,F
-    btfss   STATUS,C
-    bra     CRxLoop
-    incf    CountH,F
+    OSCTUNEbits.PLLEN = 1; //Set PLL on. Not sure why this isn't in the main setup function
+    for (int i = 0; i < 512; i++) { //Clear the receive buffer 
+    	RxBuffer[i] = 0;
+    }
 
-    btfss   CountH,1
-    bra     CRxLoop  
+	TRISCbits.TRISC7 = 1;	//Allow the EUSART RX to control pin RC7
+	TRISCbits.TRISC6 = 1;	//Allow the EUSART RX to control pin RC6
 
-; Setup EUSART
-    bsf     TRISC,7         ;Allow the EUSART RX to control pin RC7
-    bsf     TRISC,6         ;Allow the EUSART TX to control pin RC6
+    BAUDCONbits.BRG16 = 1; 	//Enable EUSART for 16-bit Asynchronous operation
+	SPBRGH = 0;
+	
+    SPBRG = .31; 			//Baud rate is 250KHz for 32MHz Osc. freq.
 
-    bsf     BAUDCON,BRG16   ;Enable EUSART for 16-bit Asynchronous operation
-    clrf    SPBRGH
+    TXSTA = 0x04;			//Enable transmission and CLEAR high baud rate
 
-    movlw   .31             ;Baud rate is 250KHz for 32MHz Osc. freq.
-    movwf   SPBRG
-    
-    movlw   0x04            ;Disable transmission
-    movwf   TXSTA           ;Enable transmission and CLEAR high baud rate
-
-    movlw   0x90
-    movwf   RCSTA           ;Enable serial port and reception
-_endasm
+    RCSTA = 0x90;			//Enable serial port and reception
 }
 
 void receiveDMX(void)
