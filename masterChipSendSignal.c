@@ -13,9 +13,6 @@
 // Global Variables
 //
 
-char buffer[40]; //Assuming the DMX parsing code will output data to this array
-char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
-
 //
 // Device Configuration
 //
@@ -55,33 +52,13 @@ char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
 // Interrupts
 //
 
-#pragma interrupt high_isr
-void high_isr(void)
+__interrupt(high_priority) void getData(void)
 {
-}
-
-#pragma interruptlow low_isr
-void low_isr(void)
-{
-}
-
-#pragma code high_isr_entry=8
-void high_isr_entry(void)
-{
-    _asm goto high_isr _endasm
-}
-
-#pragma code low_isr_entry=0x18
-void low_isr_entry(void)
-{
-    _asm goto low_isr _endasm
 }
 
 //
 // Code
 //
-
-#pragma code
 
 void setup(void)
 {
@@ -98,9 +75,7 @@ void setup(void)
 
 	//Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
 	SSPADD = 100;
-	
-	buffer[0]=7;
-	slaveAddress[0] = 40;
+
 	PIR1bits.SSPIF = 0;
 
 	SSPCON1bits.SSPEN = 1;
@@ -109,7 +84,7 @@ void setup(void)
 void main(void)
 {
 	int receiver = 0;
-	
+
 	setup();
 
 	while(1)
@@ -118,5 +93,5 @@ void main(void)
 		{
 			sendI2C(receiver);
 		};
-	}	
+	}
 }
