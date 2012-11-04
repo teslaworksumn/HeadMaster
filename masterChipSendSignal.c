@@ -78,6 +78,7 @@ char CountL, CountH; //16-bit counter (OLD, try to remove)
 char inputBuffer; //used to replace W in ASM code, may just be able to use COUNTL to save variables
 char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
 const int BYTES_PER_SLAVE = 8; //TODO: Change to number of DMX channels used per slave
+const int DMXStartCode = 0x00;
 //******************************************************************************
 void setupDMX(void)
 {
@@ -117,14 +118,17 @@ MainLoop:
 //    bra     WaitBreak
 //    bcf     RCSTA,CREN
 //    bsf     RCSTA,CREN
-    while (!RCSTAbits.FERR) {
-        if (RCSTAbits.OERR) {
-            RCSTAbits.CREN = 0;
-            RCSTAbits.CREN = 1;
-        }
+	while (1) {
+    	while (!RCSTAbits.FERR) {
+        	if (RCSTAbits.OERR) {
+            	RCSTAbits.CREN = 0;		//Toggle CREN to clear OERR flag
+            	RCSTAbits.CREN = 1;
+            	break;
+        	}
+    	}
     }
 
-GotBreak:
+//GotBreak:
 //    movf    RCREG,W                 ;Read the Receive buffer to clear the error condition
     inputBuffer = RCREG; 
 
@@ -135,20 +139,21 @@ GotBreak:
 //    btfsc   RCSTA,FERR              ;Got a byte
 //    bra     GotBreak
 //    movf    RCREG,W
-    while (!PIR1bits.RCIF) ;
-    if (RCSTAbits.FERR) {
-        goto GotBreak;
-    }
-    else {
-        inputBuffer = RCREG;
-        break;
-    }
 
+	while (1) {
+		while (!PIR1bits.RCIF) ;	//Wait until a byte is correctly received
+		if (RCSTAbits.FERR) {		//Framing error
+			inputBuffer = RCREG;
+		} else {					//Got a byte
+			inputBuffer = RCREG;
+			break;
+		}
+	}
 
 //; Check for the START code value, if it is not 0, ignore the rest of the frame
 //    andlw   0xff
 //    bnz     MainLoop                ;Ignore the rest of the frame if not zero 
-    if (inputBuffer) {
+    if (inputBuffer != DMXStartCode) { //if current byte isn't START code, ignore the frame
         goto MainLoop;
     }
   
@@ -163,16 +168,17 @@ WaitForData:
 //    btfsc   RCSTA,FERR          ;If a new framing error is detected (error or short frame)
 //    bra     MainLoop            ; the rest of the frame is ignored and a new synchronization
 //                                ; is attempted
-    if (RCSTAbits.FERR) {
-        goto MainLoop;
-    }
-	
 //    btfss   PIR1,RCIF           ;Wait until a byte is correctly received
 //    bra     WaitForData
 //    movf    RCREG,W
-	
-    while (!PIR1bits.RCIF) {
-        goto MainLoop;
+
+    while (1) {
+    	if (RCSTAbits.FERR) {	//If a new framing error is detected (error or short frame)
+        	goto MainLoop;		// the rest of the frame is ignored and a new synchronization
+    	}						//is attempted
+    	if (PIR1bits.RCIF) {	//Wait until a byte is correctly received
+        	break;
+    	}
     }
     inputBuffer = RCREG;
 	
