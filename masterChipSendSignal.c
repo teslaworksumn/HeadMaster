@@ -161,10 +161,10 @@ MainLoop:
 //    clrf    CountL
 //    clrf    CountH
 //    lfsr    FSR2,RxBuffer
-    numReceivedBytes = 0;
+    numReceivedBytes = 0;	//initialize counter
 
 //; Third loop, receiving 512 bytes of data
-WaitForData:
+WaitForData:	//considering pulling this out as a function to avoid goto statement
 //    btfsc   RCSTA,FERR          ;If a new framing error is detected (error or short frame)
 //    bra     MainLoop            ; the rest of the frame is ignored and a new synchronization
 //                                ; is attempted
@@ -180,7 +180,7 @@ WaitForData:
         	break;
     	}
     }
-    inputBuffer = RCREG;
+    inputBuffer = RCREG;		//read received byte from RCREG
 	
 //MoveData
 //    movwf   POSTINC2            ;Move the received data to the buffer 
