@@ -73,7 +73,9 @@ void low_isr(void)
 }
 //*****************************************************************************
 char RxBuffer[512];
-char CountL,CountH; //16-bit counter
+int numReceivedBytes; //16-bit counter
+char CountL, CountH; //16-bit counter (OLD, try to remove)
+char inputBuffer; //used to replace W in ASM code, may just be able to use COUNTL to save variables
 char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
 const int BYTES_PER_SLAVE = 8; //TODO: Change to number of DMX channels used per slave
 //******************************************************************************
@@ -115,63 +117,98 @@ _endasm
 
 void receiveDMX(void)
 {
-_asm
-MainLoop
-    bsf     PORTB,RB0
-    bsf     PORTB,RB1
+//_asm
+MainLoop:
+//    bsf     PORTB,RB0
+//    bsf     PORTB,RB1
+	PORTBbits.RB0 = 1;
+	PORTBbits.RB1 = 1;
     
-; First loop, synchronizing with the transmitter
+//; First loop, synchronizing with the transmitter
 
-WaitBreak
-    btfsc   RCSTA,FERR
-    bra     GotBreak
-    btfss   RCSTA,OERR
-    bra     WaitBreak
-    bcf     RCSTA,CREN
-    bsf     RCSTA,CREN
+//WaitBreak
+//    btfsc   RCSTA,FERR
+//    bra     GotBreak
+//    btfss   RCSTA,OERR
+//    bra     WaitBreak
+//    bcf     RCSTA,CREN
+//    bsf     RCSTA,CREN
+    while (!RCSTAbits.FERR) {
+		if (RCSTAbits.OERR) {
+			RCSTAbits.CREN = 0;
+			RCSTAbits.CREN = 1;
+		}
+	}
 
-GotBreak
-    movf    RCREG,W                 ;Read the Receive buffer to clear the error condition
+GotBreak:
+//    movf    RCREG,W                 ;Read the Receive buffer to clear the error condition
+	inputBuffer = RCREG; 
 
-;Second loop, waiting for the START code
-WaitForStart
-    btfss   PIR1,RCIF               ;Wait until a byte is correctly received
-    bra     WaitForStart
-    btfsc   RCSTA,FERR              ;Got a byte
-    bra     GotBreak
-    movf    RCREG,W
+//;Second loop, waiting for the START code
+//WaitForStart:
+//    btfss   PIR1,RCIF               ;Wait until a byte is correctly received
+//    bra     WaitForStart
+//    btfsc   RCSTA,FERR              ;Got a byte
+//    bra     GotBreak
+//    movf    RCREG,W
+    while (!PIR1bits.RCIF) ;
+	if (RCSTAbits.FERR) {
+		goto GotBreak;
+	}
+	else {
+		inputBuffer = RCREG;
+		break;
+	}
 
-; Check for the START code value, if it is not 0, ignore the rest of the frame
-    andlw   0xff
-    bnz     MainLoop                ;Ignore the rest of the frame if not zero 
+
+//; Check for the START code value, if it is not 0, ignore the rest of the frame
+//    andlw   0xff
+//    bnz     MainLoop                ;Ignore the rest of the frame if not zero 
+    if (inputBuffer) {
+    	goto MainLoop;
+    }
   
-; Init receive counter and buffer pointer        
-    clrf    CountL
-    clrf    CountH
-    lfsr    FSR2,RxBuffer
+//; Init receive counter and buffer pointer        
+//    clrf    CountL
+//    clrf    CountH
+//    lfsr    FSR2,RxBuffer
+    numReceivedBytes = 0;
 
-; Third loop, receiving 512 bytes of data
-WaitForData
-    btfsc   RCSTA,FERR          ;If a new framing error is detected (error or short frame)
-    bra     MainLoop            ; the rest of the frame is ignored and a new synchronization
-                                ; is attempted
+//; Third loop, receiving 512 bytes of data
+WaitForData:
+//    btfsc   RCSTA,FERR          ;If a new framing error is detected (error or short frame)
+//    bra     MainLoop            ; the rest of the frame is ignored and a new synchronization
+//                                ; is attempted
+	if (RCSTAbits.FERR) {
+		goto MainLoop;
+	}
+	
+//    btfss   PIR1,RCIF           ;Wait until a byte is correctly received
+//    bra     WaitForData
+//    movf    RCREG,W
+	
+	while (!PIR1bits.RCIF) {
+		goto MainLoop;
+	}
+	inputBuffer = RCREG;
+	
+//MoveData
+//    movwf   POSTINC2            ;Move the received data to the buffer 
+//                                ; (auto-incrementing pointer)
+//    incf    CountL,F            ;Increment 16-bit counter
+//    btfss   STATUS,C
+//    bra     WaitForData
+//    incf    CountH,F
+    RxBuffer[numReceivedBytes++] = inputBuffer;
 
-    btfss   PIR1,RCIF           ;Wait until a byte is correctly received
-    bra     WaitForData
-    movf    RCREG,W
-
-MoveData
-    movwf   POSTINC2            ;Move the received data to the buffer 
-                                ; (auto-incrementing pointer)
-    incf    CountL,F            ;Increment 16-bit counter
-    btfss   STATUS,C
-    bra     WaitForData
-    incf    CountH,F
-
-    btfss   CountH,1            ;Check if 512 bytes of data received
-    bra     WaitForData
-    return
-_endasm
+//    btfss   CountH,1            ;Check if 512 bytes of data received
+//    bra     WaitForData
+//    return
+    if (numReceivedBytes < 512) {
+    	goto WaitForData;
+    }
+    return;
+//_endasm
 }
 
 /**
