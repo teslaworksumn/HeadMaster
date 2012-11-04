@@ -52,7 +52,7 @@
 // Interrupts
 //
 
-__interrupt(high_priority) void getData(void)
+__interrupt(high_priority) void HighPriorityInterrupt(void)
 {
 }
 
@@ -60,7 +60,7 @@ __interrupt(high_priority) void getData(void)
 // Code
 //
 
-void setup(void)
+void Setup(void)
 {
 	TRISBbits.RB4 = 1;//SDA
 	TRISBbits.RB6 = 1;//SCL
@@ -85,7 +85,7 @@ void main(void)
 {
 	int receiver = 0;
 
-	setup();
+	Setup();
 
 	while(1)
 	{
