@@ -13,7 +13,7 @@ int DMXBytesReceived; //16-bit counter
 char DMXInputBuffer; //used to read RCREG to clear error conditions
 const int DMXStartCode = 0x00;
 enum {
-    DMXMainLoop, DMXWaitBreak, DMXGotBreak, DMXWaitForStart, DMXWaitForData, DMXMoveData, DMXDone
+    DMXMainLoop, DMXWaitBreak, DMXGotBreak, DMXWaitForStart, DMXWaitForData, DMXDone
 } DMXState;
 
 void DMXSetup(void)
@@ -36,7 +36,7 @@ void DMXSetup(void)
     RCSTA = 0x90;			//Enable serial port and reception
 }
 
-void receiveDMX(void)
+void DMXReceive(void)
 {
     while (DMXState != DMXDone) {
         switch (DMXState) {
@@ -46,48 +46,50 @@ void receiveDMX(void)
                 DMXState = DMXWaitBreak;
                 break;
             case DMXWaitBreak:
-                if (RCSTAbits.FERR){
+                if (RCSTAbits.FERR){            //Framing error
                     DMXState = DMXGotBreak;
+                    break;
                 } else {
                     if (RCSTAbits.OERR) {
-            	        RCSTAbits.CREN = 0;		//Toggle CREN to clear OERR flag
+            	        RCSTAbits.CREN = 0;		//Toggling CREN clears OERR flag
             	        RCSTAbits.CREN = 1;
-            	        break;
             	    }
-                }//end else
+                }
                 break;
             case DMXGotBreak:
-                DMXInputBuffer = RCREG; //Read the Receive buffer to clear the error condition
+                DMXInputBuffer = RCREG;         //Read the Receive buffer to clear FERR
                 DMXState = DMXWaitForStart;
                 break;
             case DMXWaitForStart:
-                while (!PIR1bits.RCIF) ; //Wait until a byte is correctly received
-                if (RCSTAbits.FERR) {		//Framing error
-			        DMXInputBuffer = RCREG; //Read the Receive buffer to clear the error condition
-		        } else {					//Got a byte
-			        DMXInputBuffer = RCREG; //Read the Receive buffer to clear the error condition
+                while (!PIR1bits.RCIF) ;        //Wait until a byte has been received
+                if (RCSTAbits.FERR) {
+			        DMXState = DMXGotBreak;
+			        break;
+		        } else {
+			        DMXInputBuffer = RCREG;     //Read the Receive buffer
 		        }
-		            if (DMXInputBuffer != DMXStartCode) { //if current byte isn't START code, ignore the frame
+		        if (DMXInputBuffer != DMXStartCode) { //if current byte isn't START code, ignore the frame
                     DMXState = DMXMainLoop;
+                    break;
                 }
-                DMXBytesReceived = 0;	//initialize counter
+                DMXBytesReceived = 0;	        //initialize counter
+                DMXState = DMXWaitForData;
                 break;
             case DMXWaitForData:
-                if (RCSTAbits.FERR) {	//If a new framing error is detected (error or short frame)
+                if (RCSTAbits.FERR) {	        //If a new framing error is detected (error or short frame)
         	        DMXState = DMXMainLoop;		// the rest of the frame is ignored and a new synchronization
-    	        }						//is attempted
-    	        if (PIR1bits.RCIF) {	//Wait until a byte is correctly received
-    	            DMXInputBuffer = RCREG;		//read received byte from RCREG
-    	            DMXState = DMXMoveData;
-        	        break;
+        	        break;                      //is attempted
     	        }
-                break;
-            case DMXMoveData:
-                DMXBuffer[DMXBytesReceived++] = DMXInputBuffer;
-                if (DMXBytesReceived < DMXBufferSize) {
-                    DMXState = DMXWaitForData;
-                    break;
-                } else DMXState = DMXDone;
+    	        if (PIR1bits.RCIF) {	        //Wait until a byte is correctly received
+    	            DMXBuffer[DMXBytesReceived++] = RCREG;
+        	        if (DMXBytesReceived < DMXBufferSize) {
+                        DMXState = DMXWaitForData;
+                        break;
+                    } else {
+                        DMXState = DMXDone;
+                        break;
+                    }
+                }
                 break;
             case DMXDone:
                 return;
