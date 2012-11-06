@@ -3,22 +3,24 @@
  * Project: Animatronic heads
  *		Functions for use with PIC18 microcontrollers to receive DMX data
  *
+ * Author: Kevan Ahlquist (@aterlumen)
  */
 
 // Variables
-char RxBuffer[512];
-static int numReceivedBytes; //16-bit counter
-char inputBuffer; //used to read RCREG to clear error conditions
+const int DMXBufferSize = 512;
+char DMXBuffer[DMXBufferSize];
+int DMXBytesReceived; //16-bit counter
+char DMXInputBuffer; //used to read RCREG to clear error conditions
 const int DMXStartCode = 0x00;
 enum {
-    MainLoop, WaitBreak, GotBreak, WaitForStart, WaitForData, MoveData, Done
-} state;
+    DMXMainLoop, DMXWaitBreak, DMXGotBreak, DMXWaitForStart, DMXWaitForData, DMXMoveData, DMXDone
+} DMXState;
 
-void setupDMX(void)
+void DMXSetup(void)
 {
     OSCTUNEbits.PLLEN = 1; //Set PLL on. Not sure why this isn't in the main setup function
-    for (int i = 0; i < 512; i++) { //Clear the receive buffer 
-    	RxBuffer[i] = 0;
+    for (int i = 0; i < DMXBufferSize; i++) { //Clear the receive buffer 
+    	DMXBuffer[i] = 0;
     }
 
 	TRISCbits.TRISC7 = 1;	//Allow the EUSART RX to control pin RC7
@@ -36,16 +38,16 @@ void setupDMX(void)
 
 void receiveDMX(void)
 {
-    while (state != Done) {
-        switch (state) {
-            case MainLoop:
+    while (DMXState != DMXDone) {
+        switch (DMXState) {
+            case DMXMainLoop:
                 PORTBbits.RB0 = 1;
                 PORTBbits.RB1 = 1;
-                state = WaitBreak;
+                DMXState = DMXWaitBreak;
                 break;
-            case WaitBreak:
+            case DMXWaitBreak:
                 if (RCSTAbits.FERR){
-                    state = GotBreak;
+                    DMXState = DMXGotBreak;
                 } else {
                     if (RCSTAbits.OERR) {
             	        RCSTAbits.CREN = 0;		//Toggle CREN to clear OERR flag
@@ -54,40 +56,40 @@ void receiveDMX(void)
             	    }
                 }//end else
                 break;
-            case GotBreak:
-                inputBuffer = RCREG; //Read the Receive buffer to clear the error condition
-                state = WaitForStart;
+            case DMXGotBreak:
+                DMXInputBuffer = RCREG; //Read the Receive buffer to clear the error condition
+                DMXState = DMXWaitForStart;
                 break;
-            case WaitForStart:
+            case DMXWaitForStart:
                 while (!PIR1bits.RCIF) ; //Wait until a byte is correctly received
                 if (RCSTAbits.FERR) {		//Framing error
-			        inputBuffer = RCREG; //Read the Receive buffer to clear the error condition
+			        DMXInputBuffer = RCREG; //Read the Receive buffer to clear the error condition
 		        } else {					//Got a byte
-			        inputBuffer = RCREG; //Read the Receive buffer to clear the error condition
+			        DMXInputBuffer = RCREG; //Read the Receive buffer to clear the error condition
 		        }
-		            if (inputBuffer != DMXStartCode) { //if current byte isn't START code, ignore the frame
-                    state = MainLoop;
+		            if (DMXInputBuffer != DMXStartCode) { //if current byte isn't START code, ignore the frame
+                    DMXState = DMXMainLoop;
                 }
-                numReceivedBytes = 0;	//initialize counter
+                DMXBytesReceived = 0;	//initialize counter
                 break;
-            case WaitForData:
+            case DMXWaitForData:
                 if (RCSTAbits.FERR) {	//If a new framing error is detected (error or short frame)
-        	        state = MainLoop;		// the rest of the frame is ignored and a new synchronization
+        	        DMXState = DMXMainLoop;		// the rest of the frame is ignored and a new synchronization
     	        }						//is attempted
     	        if (PIR1bits.RCIF) {	//Wait until a byte is correctly received
-    	            inputBuffer = RCREG;		//read received byte from RCREG
-    	            state = MoveData;
+    	            DMXInputBuffer = RCREG;		//read received byte from RCREG
+    	            DMXState = DMXMoveData;
         	        break;
     	        }
                 break;
-            case MoveData:
-                RxBuffer[numReceivedBytes++] = inputBuffer;
-                if (numReceivedBytes < 512) {
-                    state = WaitForData;
+            case DMXMoveData:
+                DMXBuffer[DMXBytesReceived++] = DMXInputBuffer;
+                if (DMXBytesReceived < DMXBufferSize) {
+                    DMXState = DMXWaitForData;
                     break;
-                } else state = Done;
+                } else DMXState = DMXDone;
                 break;
-            case Done:
+            case DMXDone:
                 return;
             default:
                 // You're in no man's land now.
