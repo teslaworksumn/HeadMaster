@@ -78,7 +78,7 @@ const int BYTES_PER_SLAVE = 8; //TODO: Change to number of DMX channels used per
 //******************************************************************************
 
 /**
- * Send BYTES_PER_SLAVE bytes of data from the buffer via I2C to the indicated receiver. 
+ * Send BYTES_PER_SLAVE bytes of data from the DMXBuffer via I2C to the indicated receiver. 
  * Reciever 0: bytes 0 to (BYTES_PER_SLAVE - 1)
  * Reciever 1: bytes BYTES_PER_SLAVE to (2*BYTES_PER_SLAVE - 1)
  * etc.
@@ -94,7 +94,7 @@ void sendI2C(int receiver)
 
     for (i = 0; i < 10; ++i)
     {
-        sendByte(buffer[10*receiver + i]);
+        sendByte(DMXBuffer[10*receiver + i]);
         while(!PIR1bits.SSPIF) ;
     };
 
@@ -127,7 +127,7 @@ void setup(void)
     //Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
     SSPADD = 100;
 
-    buffer[0]=7;
+    DMXBuffer[0]=7;
     slaveAddress[0] = 40;
     PIR1bits.SSPIF = 0;
 
