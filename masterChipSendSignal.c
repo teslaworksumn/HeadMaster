@@ -6,16 +6,13 @@
 // Copyright (c) 2012 Tesla Works. All rights reserved.
 //
 
+#include "DMXlib.h"
 #include "I2C.h"
 #include <xc.h>
 
-//
 // Global Variables
-//
 
-//
 // Device Configuration
-//
 
 /*
 #pragma config CPUDIV = NOCLKDIV
@@ -48,9 +45,7 @@
 #pragma config DEBUG = OFF
  */
 
-//
 // Interrupts
-//
 
 __interrupt(high_priority) void HighPriorityInterrupt(void)
 {
@@ -85,9 +80,11 @@ void main(void)
 {
     int receiver = 0;
 
-    Setup();
-
-    while (1) {
+    setup();
+    DMXSetup();
+    while(1)
+    {
+		DMXReceive();
         for (receiver = 0; receiver < 4; ++receiver) {
             sendI2C(receiver);
         }
