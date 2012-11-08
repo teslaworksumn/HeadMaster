@@ -4,6 +4,14 @@
  *	Unroll all functions for maximum performance benefit
  */
 
+#include "MiniVec.h"
+#include <string.h>
+
+void MVSet(char vector[], char vectorCount, char value)
+{
+	memset(vector, value, vectorCount);
+}
+
 void MVAdd(char vector[], char vectorCount, char numberToAdd)
 {
     int index;
