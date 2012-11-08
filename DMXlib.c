@@ -6,28 +6,28 @@
  * Author: Kevan Ahlquist (@aterlumen)
  */
 
-// Variables
-const int DMXBufferSize = 512;
-char DMXBuffer[DMXBufferSize];
-int DMXBytesReceived; //16-bit counter
-char DMXInputBuffer; //used to read RCREG to clear error conditions
-const int DMXStartCode = 0x00;
+#include "DMXlib.h"
+
+// Constants
 enum {
     DMXWaitBreak, DMXGotBreak, DMXWaitForStart, DMXWaitForData, DMXDone
 } DMXState;
 
+// Variables
+int DMXBytesReceived; //16-bit counter
+char DMXInputBuffer; //used to read RCREG to clear error conditions
+
 void DMXSetup(void)
 {
-    OSCTUNEbits.PLLEN = 1; //Set PLL on. Not sure why this isn't in the main setup function
     for (int i = 0; i < DMXBufferSize; i++) { //Clear the receive buffer 
-    	DMXBuffer[i] = 0;
+        DMXBuffer[i] = 0;
     }
 
-	TRISCbits.TRISC7 = 1;	//Allow the EUSART RX to control pin RC7
-	TRISCbits.TRISC6 = 1;	//Allow the EUSART RX to control pin RC6
+    TRISCbits.TRISC7 = 1;	//Allow the EUSART RX to control pin RC7
+    TRISCbits.TRISC6 = 1;	//Allow the EUSART RX to control pin RC6
 
     BAUDCONbits.BRG16 = 1; 	//Enable EUSART for 16-bit Asynchronous operation
-	SPBRGH = 0;
+    SPBRGH = 0;
 	
     SPBRG = 31; 			//Baud rate is 250KHz for 32MHz Osc. freq.
 
@@ -63,19 +63,21 @@ void DMXReceive(void)
 		        } else {
 			        DMXInputBuffer = RCREG;     //Read the Receive buffer
 		        }
-		        if (DMXInputBuffer != DMXStartCode) { //if current byte isn't START code, ignore the frame
+                if (DMXInputBuffer != DMXStartCode) { //if current byte isn't START code, ignore the frame
                     DMXState = DMXWaitBreak;
                     break;
                 }
-                DMXBytesReceived = 0;	        //initialize counter
-                DMXState = DMXWaitForData;
-                break;
+                else {
+                    DMXBytesReceived = 0;	        //initialize counter
+                    DMXState = DMXWaitForData;
+                    break;
+                }
             case DMXWaitForData:
                 if (RCSTAbits.FERR) {	        //If a new framing error is detected (error or short frame)
                     DMXState = DMXWaitBreak;	// the rest of the frame is ignored and a new synchronization
         	        break;                      //is attempted
     	        }
-    	        if (PIR1bits.RCIF) {	        //Wait until a byte is correctly received
+                if (PIR1bits.RCIF) {	        //Wait until a byte is correctly received
     	            DMXBuffer[DMXBytesReceived++] = RCREG;
         	        if (DMXBytesReceived < DMXBufferSize) {
                         DMXState = DMXWaitForData;

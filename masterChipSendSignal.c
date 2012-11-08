@@ -10,7 +10,7 @@
 */
 
 #include <p18f2620.h>
-#include DMXlib.h
+#include "DMXlib.h"
 
 //config from dmx code ******************************************************
 /*
@@ -127,13 +127,12 @@ void setup(void)
     //Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
     SSPADD = 100;
 
-    DMXBuffer[0]=7;
-    slaveAddress[0] = 40;
     PIR1bits.SSPIF = 0;
 
     //INTCON |= 0xC0;
 
     SSPCON1bits.SSPEN = 1;
+    OSCTUNEbits.PLLEN = 1; //Set PLL on.
 }
 
 void main(void)

@@ -6,8 +6,11 @@
  * Author: Kevan Ahlquist (@aterlumen)
  */
  
+ // Constants
+ const int DMXBufferSize = 512;
+ const int DMXStartCode = 0x00;
+ 
  // Variables
-const int DMXBufferSize = 512;
 char DMXBuffer[DMXBufferSize];
 
 
