@@ -4,16 +4,13 @@
  *		This microcontroller receives a DMX input signal, buffers and distributes the data to 4 
  *		servo control boards via I2C.
  */
-
+ 
 /*Todo:
  * Verify pragmas
- * adapt dmx reciving code, waiting on github access
- * Check for off by 1 errors in indices
- * Double buffering of input data? 
- *		Not strictly necessary for functionality, but may be nice for best practice
 */
 
 #include <p18f2620.h>
+#include "DMXlib.h"
 
 //config from dmx code ******************************************************
 /*
@@ -57,13 +54,13 @@ void sendByte(char data);
 void high_isr_entry(void)
 {
     _asm goto high_isr _endasm
-}
+};
 
 #pragma code low_isr_entry=0x18
 void low_isr_entry(void)
 {
     _asm goto low_isr _endasm
-}
+};
 #pragma code
 
 #pragma interrupt high_isr
@@ -75,84 +72,82 @@ void high_isr(void)
 void low_isr(void)
 {
 }
-//******************************************************
-
-char buffer[40]; //Assuming the DMX parsing code will output data to this array
-//char bufferStart;
+//*****************************************************************************
 char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
+const int BYTES_PER_SLAVE = 8; //TODO: Change to number of DMX channels used per slave
+//******************************************************************************
 
 /**
- * Sends 10 bytes of data from the buffer via I2C to the receiver. 
- * Reciever 0: bytes 0-9
- * Reciever 1: bytes 10-19
+ * Send BYTES_PER_SLAVE bytes of data from the DMXBuffer via I2C to the indicated receiver. 
+ * Reciever 0: bytes 0 to (BYTES_PER_SLAVE - 1)
+ * Reciever 1: bytes BYTES_PER_SLAVE to (2*BYTES_PER_SLAVE - 1)
  * etc.
 **/
 void sendI2C(int receiver)
 {
-	int i = 0;
-	
-	SSPCON2bits.SEN=1;
-	while(!PIR1bits.SSPIF) ;
-	sendByte(slaveAddress[receiver]);
-	while(!PIR1bits.SSPIF) ;
-	
-	for (i = 0; i < 10; ++i)
-	{
-		sendByte(buffer[10*receiver + i]);
-		while(!PIR1bits.SSPIF) ;
-	};
+    int i = 0;
 
-	SSPCON2bits.PEN=1;
-	PIR1bits.SSPIF = 0;
+    SSPCON2bits.SEN=1;
+    while(!PIR1bits.SSPIF) ;
+    sendByte(slaveAddress[receiver]);
+    while(!PIR1bits.SSPIF) ;
+
+    for (i = 0; i < 10; ++i)
+    {
+        sendByte(DMXBuffer[10*receiver + i]);
+        while(!PIR1bits.SSPIF) ;
+    };
+
+    SSPCON2bits.PEN=1;
+    PIR1bits.SSPIF = 0;
 }
 				 
 /* Adds a single byte of data to the send buffer, does not wait for send completion to return
  */
 void sendByte(char data)
 {
-	SSPBUF = data;
-	PIR1bits.SSPIF = 0;
+    SSPBUF = data;
+    PIR1bits.SSPIF = 0;
 }
 
 void setup(void)
 {
-//	bufferStart = 0;
-
-	TRISBbits.RB4 = 1;//SDA
-	TRISBbits.RB6 = 1;//SCL
+    TRISBbits.RB4 = 1;//SDA
+    TRISBbits.RB6 = 1;//SCL
 	//LATBbits.LATB4 = 1;
 
-	//set up MSSP for master mode
-	SSPSTATbits.SMP = 1;
-	SSPSTATbits.CKE = 1;
+    //set up MSSP for master mode
+    SSPSTATbits.SMP = 1;
+    SSPSTATbits.CKE = 1;
 
-	SSPCON1 = 0b00001000;
+    SSPCON1 = 0b00001000;
 
-	SSPCON2 = 0b00000000;
-
-	//Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
-	SSPADD = 100;
+    SSPCON2 = 0b00000000;
 	
-	buffer[0]=7;
-	slaveAddress[0] = 40;
-	PIR1bits.SSPIF = 0;
+    //Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
+    SSPADD = 100;
 
-	//INTCON |= 0xC0;
+    PIR1bits.SSPIF = 0;
 
-	SSPCON1bits.SSPEN = 1;
+    //INTCON |= 0xC0;
+
+    SSPCON1bits.SSPEN = 1;
+    OSCTUNEbits.PLLEN = 1; //Set PLL on.
 }
 
 void main(void)
 {
-	int receiver = 0;
-	
-	setup();
+    int receiver = 0;
 
-	while(1)
-	{
-		for (receiver = 0; receiver < 4; ++receiver)
-		{
-			sendI2C(receiver);
-		};
-	}	
+    setup();
+    DMXSetup();
+    while(1)
+    {
+		DMXReceive();
+        for (receiver = 0; receiver < 4; ++receiver)
+
+        {
+            sendI2C(receiver);
+        };
+    }
 }
