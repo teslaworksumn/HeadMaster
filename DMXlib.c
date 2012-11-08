@@ -13,7 +13,7 @@ int DMXBytesReceived; //16-bit counter
 char DMXInputBuffer; //used to read RCREG to clear error conditions
 const int DMXStartCode = 0x00;
 enum {
-    DMXMainLoop, DMXWaitBreak, DMXGotBreak, DMXWaitForStart, DMXWaitForData, DMXDone
+    DMXWaitBreak, DMXGotBreak, DMXWaitForStart, DMXWaitForData, DMXDone
 } DMXState;
 
 void DMXSetup(void)
@@ -29,7 +29,7 @@ void DMXSetup(void)
     BAUDCONbits.BRG16 = 1; 	//Enable EUSART for 16-bit Asynchronous operation
 	SPBRGH = 0;
 	
-    SPBRG = .31; 			//Baud rate is 250KHz for 32MHz Osc. freq.
+    SPBRG = 31; 			//Baud rate is 250KHz for 32MHz Osc. freq.
 
     TXSTA = 0x04;			//Enable transmission and CLEAR high baud rate
 
@@ -40,11 +40,6 @@ void DMXReceive(void)
 {
     while (DMXState != DMXDone) {
         switch (DMXState) {
-            case DMXMainLoop:
-                PORTBbits.RB0 = 1;
-                PORTBbits.RB1 = 1;
-                DMXState = DMXWaitBreak;
-                break;
             case DMXWaitBreak:
                 if (RCSTAbits.FERR){            //Framing error
                     DMXState = DMXGotBreak;
@@ -63,13 +58,13 @@ void DMXReceive(void)
             case DMXWaitForStart:
                 while (!PIR1bits.RCIF) ;        //Wait until a byte has been received
                 if (RCSTAbits.FERR) {
-			        DMXState = DMXGotBreak;
+                    DMXState = DMXGotBreak;
 			        break;
 		        } else {
 			        DMXInputBuffer = RCREG;     //Read the Receive buffer
 		        }
 		        if (DMXInputBuffer != DMXStartCode) { //if current byte isn't START code, ignore the frame
-                    DMXState = DMXMainLoop;
+                    DMXState = DMXWaitBreak;
                     break;
                 }
                 DMXBytesReceived = 0;	        //initialize counter
@@ -77,7 +72,7 @@ void DMXReceive(void)
                 break;
             case DMXWaitForData:
                 if (RCSTAbits.FERR) {	        //If a new framing error is detected (error or short frame)
-        	        DMXState = DMXMainLoop;		// the rest of the frame is ignored and a new synchronization
+                    DMXState = DMXWaitBreak;	// the rest of the frame is ignored and a new synchronization
         	        break;                      //is attempted
     	        }
     	        if (PIR1bits.RCIF) {	        //Wait until a byte is correctly received
