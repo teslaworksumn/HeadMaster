@@ -5,14 +5,13 @@
  *
  * Author: Kevan Ahlquist (@aterlumen)
  */
- 
- // Constants
- const int DMXBufferSize = 512;
- const int DMXStartCode = 0x00;
+
+// Defines
+#define DMX_BUFFER_SIZE 512
+#define DMX_START_CODE 0x00
  
  // Variables
-char DMXBuffer[DMXBufferSize];
-
+char DMXBuffer[DMX_BUFFER_SIZE];
 
 // Functions
 void DMXSetup(void);

@@ -7,6 +7,7 @@
  */
 
 #include "DMXlib.h"
+#include <xc.h>
 
 // Constants
 enum {
@@ -19,7 +20,7 @@ char DMXInputBuffer; //used to read RCREG to clear error conditions
 
 void DMXSetup(void)
 {
-    for (int i = 0; i < DMXBufferSize; i++) { //Clear the receive buffer 
+    for (int i = 0; i < DMX_BUFFER_SIZE; i++) { //Clear the receive buffer
         DMXBuffer[i] = 0;
     }
 
@@ -63,7 +64,7 @@ void DMXReceive(void)
 		        } else {
 			        DMXInputBuffer = RCREG;     //Read the Receive buffer
 		        }
-                if (DMXInputBuffer != DMXStartCode) { //if current byte isn't START code, ignore the frame
+                if (DMXInputBuffer != DMX_START_CODE) { //if current byte isn't START code, ignore the frame
                     DMXState = DMXWaitBreak;
                     break;
                 }
@@ -79,7 +80,7 @@ void DMXReceive(void)
     	        }
                 if (PIR1bits.RCIF) {	        //Wait until a byte is correctly received
     	            DMXBuffer[DMXBytesReceived++] = RCREG;
-        	        if (DMXBytesReceived < DMXBufferSize) {
+        	        if (DMXBytesReceived < DMX_BUFFER_SIZE) {
                         DMXState = DMXWaitForData;
                         break;
                     } else {
