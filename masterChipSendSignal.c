@@ -1,22 +1,20 @@
-/* Master DMX distribution microcontroller code
- * Organization: Tesla Works
- * Project: Animatronic heads
- *		This microcontroller receives a DMX input signal, buffers and distributes the data to 4 
- *		servo control boards via I2C.
- */
+//
+// main.c
+// HeadMaster
+//
+// Created by Kevan Ahlquist on 10/20/12.
+// Copyright (c) 2012 Tesla Works. All rights reserved.
+//
 
-/*Todo:
- * Verify pragmas
- * adapt dmx reciving code, waiting on github access
- * Check for off by 1 errors in indices
- * Double buffering of input data? 
- *		Not strictly necessary for functionality, but may be nice for best practice
-*/
-
+#include "DMXlib.h"
+#include "I2C.h"
 #include "MiniVec.h"
-#include <p18f2620.h>
+#include <xc.h>
 
-//config from dmx code ******************************************************
+// Global Variables
+
+// Device Configuration
+
 /*
 #pragma config CPUDIV = NOCLKDIV
 #pragma config USBDIV = OFF
@@ -48,40 +46,15 @@
 #pragma config DEBUG = OFF
  */
 
-void high_isr(void);
-void low_isr(void);
+// Interrupts
 
-void mapDmxToServo(char *dmx, char numberToMap);
-void sendI2C(int receiver);
-void sendByte(char data);
-
-#pragma code high_isr_entry=8
-void high_isr_entry(void)
-{
-    _asm goto high_isr _endasm
-}
-
-#pragma code low_isr_entry=0x18
-void low_isr_entry(void)
-{
-    _asm goto low_isr _endasm
-}
-#pragma code
-
-#pragma interrupt high_isr
-void high_isr(void)
+__interrupt(high_priority) void HighPriorityInterrupt(void)
 {
 }
 
-#pragma interruptlow low_isr
-void low_isr(void)
-{
-}
-//******************************************************
-
-char buffer[40]; //Assuming the DMX parsing code will output data to this array
-//char bufferStart;
-char slaveAddress[4]; //TODO: Need to hardcode slave addresses in this array
+//
+// Code
+//
 
 void mapDmxToServo(char *dmx, char numberToMap)
 {
@@ -89,78 +62,38 @@ void mapDmxToServo(char *dmx, char numberToMap)
     MVAdd(dmx, numberToMap, 30);
 }
 
-/**
- * Sends 10 bytes of data from the buffer via I2C to the receiver. 
- * Reciever 0: bytes 0-9
- * Reciever 1: bytes 10-19
- * etc.
-**/
-void sendI2C(int receiver)
+void Setup(void)
 {
-	int i = 0;
-	
-	SSPCON2bits.SEN=1;
-	while(!PIR1bits.SSPIF) ;
-	sendByte(slaveAddress[receiver]);
-	while(!PIR1bits.SSPIF) ;
-	
-	for (i = 0; i < 10; ++i)
-	{
-		sendByte(buffer[10*receiver + i]);
-		while(!PIR1bits.SSPIF) ;
-	};
+    TRISBbits.RB4 = 1; //SDA
+    TRISBbits.RB6 = 1; //SCL
 
-	SSPCON2bits.PEN=1;
-	PIR1bits.SSPIF = 0;
-}
-				 
-/* Adds a single byte of data to the send buffer, does not wait for send completion to return
- */
-void sendByte(char data)
-{
-	SSPBUF = data;
-	PIR1bits.SSPIF = 0;
-}
+    //set up MSSP for master mode
+    SSPSTATbits.SMP = 1;
+    SSPSTATbits.CKE = 1;
 
-void setup(void)
-{
-//	bufferStart = 0;
+    SSPCON1 = 0b00001000;
 
-	TRISBbits.RB4 = 1;//SDA
-	TRISBbits.RB6 = 1;//SCL
-	//LATBbits.LATB4 = 1;
+    SSPCON2 = 0b00000000;
 
-	//set up MSSP for master mode
-	SSPSTATbits.SMP = 1;
-	SSPSTATbits.CKE = 1;
+    //Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
+    SSPADD = 100;
 
-	SSPCON1 = 0b00001000;
+    PIR1bits.SSPIF = 0;
 
-	SSPCON2 = 0b00000000;
-
-	//Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
-	SSPADD = 100;
-	
-	buffer[0]=7;
-	slaveAddress[0] = 40;
-	PIR1bits.SSPIF = 0;
-
-	//INTCON |= 0xC0;
-
-	SSPCON1bits.SSPEN = 1;
+    SSPCON1bits.SSPEN = 1;
 }
 
 void main(void)
 {
-	int receiver = 0;
-	
-	setup();
+    int receiver = 0;
 
-	while(1)
-	{
-		for (receiver = 0; receiver < 4; ++receiver)
-		{
-			sendI2C(receiver);
-		};
-	}	
+    Setup();
+    DMXSetup();
+    while(1)
+    {
+		DMXReceive();
+        for (receiver = 0; receiver < 4; ++receiver) {
+            sendI2C(receiver);
+        }
+    }
 }
