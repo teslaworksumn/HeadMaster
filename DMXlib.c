@@ -7,6 +7,7 @@
  */
 
 #include "DMXlib.h"
+#include <xc.h>
 
 // Constants
 enum {
