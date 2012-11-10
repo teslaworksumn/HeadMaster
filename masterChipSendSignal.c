@@ -80,7 +80,7 @@ void main(void)
 {
     int receiver = 0;
 
-    setup();
+    Setup();
     DMXSetup();
     while(1)
     {
