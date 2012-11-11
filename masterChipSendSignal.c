@@ -14,25 +14,25 @@
 
 // Device Configuration
 
-/*
-#pragma config CPUDIV = NOCLKDIV
-#pragma config USBDIV = OFF
-#pragma config FOSC = HS
-#pragma config PLLEN = ON
-#pragma config FCMEN = OFF
-#pragma config IESO = OFF
-#pragma config PWRTEN = OFF
-#pragma config BOREN = OFF
-#pragma config BORV = 30
-#pragma config WDTEN = OFF
-#pragma config WDTPS = 32768
-#pragma config MCLRE = ON
-#pragma config HFOFST = OFF
-#pragma config STVREN = ON
+
+#pragma config OSC = HSPLL		//high speed/ PLL enabled oscilator mode
+#pragma config FCMEN = OFF		//fail-safe clock moniter
+#pragma config IESO = OFF		//inter/ext osc switchover (disabled)
+#pragma config BOREN = OFF		//brown-out reset bits
+#pragma config BORV = 3			//brown out voltage bit (min setting?)
+#pragma config PWRT = OFF		
+#pragma config WDT = OFF		//watch dog timer (off)
+#pragma config WDTPS = 32768	//wdt post-scaler (don't care)
+#pragma config CCP2MX = PORTC	//CCP2 mux bit: either PORTC or PORTBE
+#pragma config PBADEN = OFF
+#pragma config LPT1OSC = OFF
+#pragma config MCLRE = ON		//MCLR pin enabled
+#pragma config DEBUG = OFF
+#pragma config STVREN = ON		//stack full/underflow will cause reset when ON
 #pragma config LVP = OFF
 #pragma config XINST = OFF
-#pragma config BBSIZ = OFF
-#pragma config CP0 = OFF
+
+#pragma config CP0 = OFF		//all write protection bits, some missing, should be OFF
 #pragma config CP1 = OFF
 #pragma config CPB = OFF
 #pragma config WRT0 = OFF
@@ -42,8 +42,7 @@
 #pragma config EBTR0 = OFF
 #pragma config EBTR1 = OFF
 #pragma config EBTRB = OFF
-#pragma config DEBUG = OFF
- */
+
 
 // Interrupts
 
