@@ -8,6 +8,7 @@
 
 #include "DMXlib.h"
 #include "I2C.h"
+#include "MiniVec.h"
 #include <xc.h>
 
 // Global Variables
@@ -54,6 +55,12 @@ __interrupt(high_priority) void HighPriorityInterrupt(void)
 //
 // Code
 //
+
+void mapDmxToServo(char *dmx, char numberToMap)
+{
+    MVRightShift(dmx, numberToMap, 1);
+    MVAdd(dmx, numberToMap, 30);
+}
 
 void Setup(void)
 {
