@@ -26,7 +26,6 @@
 #pragma config PBADEN = OFF     // PortB A/D Enable bit
 #pragma config LPT1OSC = OFF    // Low-Power Timer1 Oscillator
 #pragma config MCLRE = ON       // MCLR pin enabled
-//#pragma config DEBUG = ON      // Background Debugger Enable bit, RB6 and RB7 used for debug
 #pragma config STVREN = ON      // Stack full/underflow will cause reset when ON
 #pragma config LVP = OFF        // Single-supply ICSP Enable bit
 #pragma config XINST = OFF      // Extended Instruction Set Enable bit
