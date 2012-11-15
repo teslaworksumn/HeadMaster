@@ -14,7 +14,6 @@
 
 // Device Configuration
 
-
 #pragma config OSC = HSPLL      // High speed/ PLL enabled oscilator mode
 #pragma config FCMEN = OFF      // Fail-safe clock moniter
 #pragma config IESO = OFF       // Int/ext osc switchover (disabled)
@@ -27,12 +26,12 @@
 #pragma config PBADEN = OFF     // PortB A/D Enable bit
 #pragma config LPT1OSC = OFF    // Low-Power Timer1 Oscillator
 #pragma config MCLRE = ON       // MCLR pin enabled
-#pragma config DEBUG = OFF      // Background Debugger Enable bit
+//#pragma config DEBUG = ON      // Background Debugger Enable bit, RB6 and RB7 used for debug
 #pragma config STVREN = ON      // Stack full/underflow will cause reset when ON
 #pragma config LVP = OFF        // Single-supply ICSP Enable bit
 #pragma config XINST = OFF      // Extended Instruction Set Enable bit
-
-#pragma config CP0 = OFF        // All write protection bits, should be OFF
+// All write protection bits, should be OFF
+#pragma config CP0 = OFF
 #pragma config CP1 = OFF
 #pragma config CP2 = OFF
 #pragma config CP3 = OFF
@@ -50,7 +49,6 @@
 #pragma config EBTR2 = OFF
 #pragma config EBTR3 = OFF
 #pragma config EBTRB = OFF
-
 
 // Interrupts
 
