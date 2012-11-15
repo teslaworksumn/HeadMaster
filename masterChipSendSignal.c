@@ -15,24 +15,24 @@
 // Device Configuration
 
 
-#pragma config OSC = HSPLL		// High speed/ PLL enabled oscilator mode
-#pragma config FCMEN = OFF		// Fail-safe clock moniter
-#pragma config IESO = OFF		// Int/ext osc switchover (disabled)
-#pragma config BOREN = OFF		// Brown-out reset bits disabled
-#pragma config BORV = 3			// Brown out voltage bit (min setting)
-#pragma config PWRT = OFF		// Power-up timer
-#pragma config WDT = OFF		// Watch dog timer (off)
-#pragma config WDTPS = 32768		// WDT post-scaler (don't care)
-#pragma config CCP2MX = PORTC		// CCP2 mux bit: either PORTC or PORTBE
-#pragma config PBADEN = OFF		// PortB A/D Enable bit
-#pragma config LPT1OSC = OFF		// Low-Power Timer1 Oscillator
-#pragma config MCLRE = ON		// MCLR pin enabled
-#pragma config DEBUG = OFF		// Background Debugger Enable bit
-#pragma config STVREN = ON		// Stack full/underflow will cause reset when ON
-#pragma config LVP = OFF		// Single-supply ICSP Enable bit
-#pragma config XINST = OFF		// Extended Instruction Set Enable bit
+#pragma config OSC = HSPLL      // High speed/ PLL enabled oscilator mode
+#pragma config FCMEN = OFF      // Fail-safe clock moniter
+#pragma config IESO = OFF       // Int/ext osc switchover (disabled)
+#pragma config BOREN = OFF      // Brown-out reset bits disabled
+#pragma config BORV = 3	        // Brown out voltage bit (min setting)
+#pragma config PWRT = OFF       // Power-up timer
+#pragma config WDT = OFF        // Watch dog timer (off)
+#pragma config WDTPS = 32768    // WDT post-scaler (don't care)
+#pragma config CCP2MX = PORTC   // CCP2 mux bit: either PORTC or PORTBE
+#pragma config PBADEN = OFF     // PortB A/D Enable bit
+#pragma config LPT1OSC = OFF    // Low-Power Timer1 Oscillator
+#pragma config MCLRE = ON       // MCLR pin enabled
+#pragma config DEBUG = OFF      // Background Debugger Enable bit
+#pragma config STVREN = ON      // Stack full/underflow will cause reset when ON
+#pragma config LVP = OFF        // Single-supply ICSP Enable bit
+#pragma config XINST = OFF      // Extended Instruction Set Enable bit
 
-#pragma config CP0 = OFF		// All write protection bits, should be OFF
+#pragma config CP0 = OFF        // All write protection bits, should be OFF
 #pragma config CP1 = OFF
 #pragma config CP2 = OFF
 #pragma config CP3 = OFF
