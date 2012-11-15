@@ -29,6 +29,7 @@
 #pragma config STVREN = ON      // Stack full/underflow will cause reset when ON
 #pragma config LVP = OFF        // Single-supply ICSP Enable bit
 #pragma config XINST = OFF      // Extended Instruction Set Enable bit
+
 // All write protection bits, should be OFF
 #pragma config CP0 = OFF
 #pragma config CP1 = OFF
