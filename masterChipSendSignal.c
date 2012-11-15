@@ -22,10 +22,10 @@
 #pragma config BORV = 3			// Brown out voltage bit (min setting)
 #pragma config PWRT = OFF		// Power-up timer
 #pragma config WDT = OFF		// Watch dog timer (off)
-#pragma config WDTPS = 32768	// WDT post-scaler (don't care)
-#pragma config CCP2MX = PORTC	// CCP2 mux bit: either PORTC or PORTBE
+#pragma config WDTPS = 32768		// WDT post-scaler (don't care)
+#pragma config CCP2MX = PORTC		// CCP2 mux bit: either PORTC or PORTBE
 #pragma config PBADEN = OFF		// PortB A/D Enable bit
-#pragma config LPT1OSC = OFF	// Low-Power Timer1 Oscillator
+#pragma config LPT1OSC = OFF		// Low-Power Timer1 Oscillator
 #pragma config MCLRE = ON		// MCLR pin enabled
 #pragma config DEBUG = OFF		// Background Debugger Enable bit
 #pragma config STVREN = ON		// Stack full/underflow will cause reset when ON
