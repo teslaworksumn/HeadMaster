@@ -19,7 +19,7 @@
 #pragma config FCMEN = OFF      // Fail-safe clock moniter
 #pragma config IESO = OFF       // Int/ext osc switchover (disabled)
 #pragma config BOREN = OFF      // Brown-out reset bits disabled
-#pragma config BORV = 3	        // Brown out voltage bit (min setting)
+#pragma config BORV = 3         // Brown out voltage bit (min setting)
 #pragma config PWRT = OFF       // Power-up timer
 #pragma config WDT = OFF        // Watch dog timer (off)
 #pragma config WDTPS = 32768    // WDT post-scaler (don't care)
