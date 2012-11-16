@@ -37,4 +37,10 @@ Compiling
     2. Go to __XC8 Global Options -> XC8 Compiler__
     3. Check the __Use CCI Syntax__ check box
 
+License
+-------
+
+This project is released under the MIT License. See `LICENSE`.  
+Copyright (c) 2012 Tesla Works.
+
 [wiki]: https://github.com/teslaworksumn/HeadMaster/wiki
