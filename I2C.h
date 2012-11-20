@@ -24,9 +24,12 @@
 // THE SOFTWARE.
 // 
 
-// Sends 10 bytes of data from the buffer via I2C to the receiver.
-// Reciever 0: bytes 0-9
-// Reciever 1: bytes 10-19
+// Constants
+const int BYTES_PER_SLAVE = 8;
+
+// Sends BYTES_PER_SLAVE bytes of data from the buffer via I2C to the receiver.
+// Reciever 0: bytes 0 to BYTES_PER_SLAVE
+// Reciever 1: bytes BYTES_PER_SLAVE to (2*BYTES_PER_SLAVE - 1)
 // etc.
 void sendI2C(int receiver);
 
