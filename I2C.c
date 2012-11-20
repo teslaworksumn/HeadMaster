@@ -43,8 +43,8 @@ void sendI2C(int receiver)
     sendByte(slaveAddresses[receiver]);
     while (!PIR1bits.SSPIF);
 
-    for (i = 0; i < 10; ++i) {
-	sendByte(buffer[10 * receiver + i]);
+    for (i = 0; i < BYTES_PER_SLAVE; ++i) {
+	sendByte(buffer[BYTES_PER_SLAVE * receiver + i]);
 	while (!PIR1bits.SSPIF);
     }
 
