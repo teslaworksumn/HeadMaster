@@ -79,7 +79,6 @@ void DMXReceive(void)
                 while (!PIR1bits.RCIF) ;        //Wait until a byte has been received
                 if (RCSTAbits.FERR) {
                     DMXState = DMXGotBreak;
-                    PIR1bits.RCIF = 0;          //Reset the received flag
 			        break;
 		        } else {
 			        DMXInputBuffer = RCREG;     //Read the Receive buffer
@@ -95,17 +94,18 @@ void DMXReceive(void)
                 }
             case DMXWaitForData:
                 if (RCSTAbits.FERR) {	        //If a new framing error is detected (error or short frame)
-                    DMXState = DMXDone;	        // the rest of the frame is ignored and the function exits
-        	        break;
+                    DMXState = DMXWaitBreak;	// the rest of the frame is ignored and a new synchronization
+        	        break;                      //is attempted
     	        }
-                while (!PIR1bits.RCIF) ;        //Wait until a byte is correctly received
-    	        DMXBuffer[DMXBytesReceived++] = RCREG;
-        	    if (DMXBytesReceived < DMX_BUFFER_SIZE) {
-                    DMXState = DMXWaitForData;
-                    break;
-                } else {
-                    DMXState = DMXDone;
-                    break;
+                if (PIR1bits.RCIF) {	        //Wait until a byte is correctly received
+    	            DMXBuffer[DMXBytesReceived++] = RCREG;
+        	        if (DMXBytesReceived < DMX_BUFFER_SIZE) {
+                        DMXState = DMXWaitForData;
+                        break;
+                    } else {
+                        DMXState = DMXDone;
+                        break;
+                    }
                 }
                 break;
             case DMXDone:
