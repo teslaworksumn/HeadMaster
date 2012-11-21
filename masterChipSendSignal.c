@@ -30,6 +30,8 @@
 #include <xc.h>
 
 // Global Variables
+// Constants
+#define NUMBER_OF_RECEIVERS 4
 
 // Device Configuration
 
@@ -115,7 +117,7 @@ void main(void)
     while(1)
     {
 		DMXReceive();
-        for (receiver = 0; receiver < 4; ++receiver) {
+        for (receiver = 0; receiver < NUMBER_OF_RECEIVERS; ++receiver) {
             sendI2C(receiver);
         }
     }
