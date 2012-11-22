@@ -29,9 +29,6 @@
 #include "MiniVec.h"
 #include <xc.h>
 
-// Global Variables
-// Constants
-
 // Device Configuration
 
 #pragma config OSC = HSPLL      // High speed/ PLL enabled oscilator mode
@@ -70,6 +67,11 @@
 #pragma config EBTR3 = OFF
 #pragma config EBTRB = OFF
 
+// Defines
+
+#define SERVO_BIT_OFFSET 1
+#define SERVO_VALUE_OFFSET 30
+
 // Interrupts
 
 __interrupt(high_priority) void HighPriorityInterrupt(void)
@@ -82,8 +84,8 @@ __interrupt(high_priority) void HighPriorityInterrupt(void)
 
 void mapDmxToServo(char *dmx, char numberToMap)
 {
-    MVRightShift(dmx, numberToMap, 1);
-    MVAdd(dmx, numberToMap, 30);
+    MVRightShift(dmx, numberToMap, SERVO_BIT_OFFSET);
+    MVAdd(dmx, numberToMap, SERVO_VALUE_OFFSET);
 }
 
 void Setup(void)
