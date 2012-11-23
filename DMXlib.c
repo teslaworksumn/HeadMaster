@@ -57,7 +57,8 @@ void DMXSetup(void)
 void DMXReceive(DMXDevice *device)
 {
     DMXState state = DMXWaitBreak;
-    int bytesReceived = 0;
+    int startCounter = 0;
+    int bufferIndex = 0;
     char sideEffectBuffer;
 
     while (state != DMXDone) {
@@ -90,7 +91,8 @@ void DMXReceive(DMXDevice *device)
                     break;
                 }
                 else {
-                    bytesReceived = 0;	        //initialize counter
+                    startCounter = 0;	        //initialize counter
+                    bufferIndex = 0;
                     state = DMXWaitForData;
                     break;
                 }
@@ -100,13 +102,14 @@ void DMXReceive(DMXDevice *device)
         	        break;                      //is attempted
     	        }
                 if (PIR1bits.RCIF) {	        //Wait until a byte is correctly received
-    	            device->buffer[bytesReceived++] = RCREG;
-        	        if (bytesReceived < device->startChannel + device->bufferSize) {
-                        state = DMXWaitForData;
-                        break;
+                    if (startCounter < device->startChannel) {
+                        sideEffectBuffer = RCREG;   // Clear RCIF;
+                        startCounter++;
+                    } else if (bufferIndex < device->bufferSize) {
+                        device->buffer[bufferIndex] = RCREG;
+                        bufferIndex++;
                     } else {
                         state = DMXDone;
-                        break;
                     }
                 }
                 break;
