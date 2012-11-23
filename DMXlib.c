@@ -38,10 +38,6 @@ char DMXInputBuffer; //used to read RCREG to clear error conditions
 
 void DMXSetup(void)
 {
-    for (int i = 0; i < DMX_BUFFER_SIZE; i++) { //Clear the receive buffer
-        DMXBuffer[i] = 0;
-    }
-
     TRISCbits.TRISC7 = 1;	//Allow the EUSART RX to control pin RC7
     TRISCbits.TRISC6 = 1;	//Allow the EUSART RX to control pin RC6
 
@@ -55,7 +51,7 @@ void DMXSetup(void)
     RCSTA = 0x90;			//Enable serial port and reception
 }
 
-void DMXReceive(void)
+void DMXReceive(DMXDevice *device)
 {
     DMXState = DMXWaitBreak;
     while (DMXState != DMXDone) {
@@ -98,8 +94,8 @@ void DMXReceive(void)
         	        break;                      //is attempted
     	        }
                 if (PIR1bits.RCIF) {	        //Wait until a byte is correctly received
-    	            DMXBuffer[DMXBytesReceived++] = RCREG;
-        	        if (DMXBytesReceived < DMX_BUFFER_SIZE) {
+    	            device->buffer[DMXBytesReceived++] = RCREG;
+        	        if (DMXBytesReceived < device->startChannel + device->bufferSize) {
                         DMXState = DMXWaitForData;
                         break;
                     } else {

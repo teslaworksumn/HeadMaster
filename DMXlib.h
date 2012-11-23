@@ -25,12 +25,15 @@
 // 
 
 // Defines
-#define DMX_BUFFER_SIZE 512
 #define DMX_START_CODE 0x00
- 
- // Variables
-char DMXBuffer[DMX_BUFFER_SIZE];
+
+// Types
+typedef struct _DMXDevice {
+    char *buffer;
+    int startChannel;
+    int bufferSize;
+} DMXDevice;
 
 // Functions
 void DMXSetup(void);
-void DMXReceive(void);
+void DMXReceive(DMXDevice *device);

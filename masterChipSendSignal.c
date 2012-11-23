@@ -39,7 +39,7 @@
 #pragma config PWRT = OFF       // Power-up timer
 #pragma config WDT = OFF        // Watch dog timer (off)
 #pragma config WDTPS = 32768    // WDT post-scaler (don't care)
-#pragma config CCP2MX = PORTC   // CCP2 mux bit: either PORTC or PORTBE
+//#pragma config CCP2MX = PORTC   // CCP2 mux bit: either PORTC or PORTBE
 #pragma config PBADEN = OFF     // PortB A/D Enable bit
 #pragma config LPT1OSC = OFF    // Low-Power Timer1 Oscillator
 #pragma config MCLRE = ON       // MCLR pin enabled
@@ -71,6 +71,8 @@
 
 #define SERVO_BIT_OFFSET 1
 #define SERVO_VALUE_OFFSET 30
+#define DMX_START_CHANNEL 0
+#define DMX_BUFFER_SIZE (NUMBER_OF_SLAVES * BYTES_PER_SLAVE)
 
 // Interrupts
 
@@ -88,7 +90,7 @@ void mapDmxToServo(char *dmx, char numberToMap)
     MVAdd(dmx, numberToMap, SERVO_VALUE_OFFSET);
 }
 
-void Setup(void)
+void Setup(DMXDevice *dmxDevice, char *dmxBuffer)
 {
     TRISBbits.RB4 = 1; //SDA
     TRISBbits.RB6 = 1; //SCL
@@ -107,17 +109,26 @@ void Setup(void)
     PIR1bits.SSPIF = 0;
 
     SSPCON1bits.SSPEN = 1;
+
+    // Configure DMX
+    DMXSetup();
+    dmxDevice->buffer = dmxBuffer;
+    dmxDevice->startChannel = DMX_START_CHANNEL;
+    dmxDevice->bufferSize = DMX_BUFFER_SIZE;
+    MVSet(dmxDevice->buffer, DMX_BUFFER_SIZE, 0);
 }
 
 void main(void)
 {
+    DMXDevice dmxDevice;
+    char dmxBuffer[DMX_BUFFER_SIZE];
     int receiver = 0;
 
-    Setup();
-    DMXSetup();
+    Setup(&dmxDevice, dmxBuffer);
+
     while(1)
     {
-		DMXReceive();
+		DMXReceive(&dmxDevice);
         for (receiver = 0; receiver < NUMBER_OF_SLAVES; ++receiver) {
             sendI2C(receiver);
         }
