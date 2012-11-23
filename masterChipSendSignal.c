@@ -29,8 +29,6 @@
 #include "MiniVec.h"
 #include <xc.h>
 
-// Global Variables
-
 // Device Configuration
 
 #pragma config OSC = HSPLL      // High speed/ PLL enabled oscilator mode
@@ -69,6 +67,11 @@
 #pragma config EBTR3 = OFF
 #pragma config EBTRB = OFF
 
+// Defines
+
+#define SERVO_BIT_OFFSET 1
+#define SERVO_VALUE_OFFSET 30
+
 // Interrupts
 
 __interrupt(high_priority) void HighPriorityInterrupt(void)
@@ -79,10 +82,35 @@ __interrupt(high_priority) void HighPriorityInterrupt(void)
 // Code
 //
 
+int ReadDMXStartChannel(void);
+
+int ReadDMXStartChannel(void)
+{
+    int dmxAddress = 0;
+    
+    if (!PORTAbits.RA5) {
+        dmxAddress += 16;
+    }
+    if (!PORTAbits.RA3) {
+        dmxAddress += 32;
+    }
+    if (!PORTAbits.RA2) {
+        dmxAddress += 64;
+    }
+    if (!PORTAbits.RA1) {
+        dmxAddress += 128;
+    }
+    if (!PORTAbits.RA0) {
+        dmxAddress += 256;
+    }
+
+    return dmxAddress;
+}
+
 void mapDmxToServo(char *dmx, char numberToMap)
 {
-    MVRightShift(dmx, numberToMap, 1);
-    MVAdd(dmx, numberToMap, 30);
+    MVRightShift(dmx, numberToMap, SERVO_BIT_OFFSET);
+    MVAdd(dmx, numberToMap, SERVO_VALUE_OFFSET);
 }
 
 void Setup(void)
@@ -112,10 +140,11 @@ void main(void)
 
     Setup();
     DMXSetup();
+    DMXStartChannel = ReadDMXStartChannel();
     while(1)
     {
 		DMXReceive();
-        for (receiver = 0; receiver < 4; ++receiver) {
+        for (receiver = 0; receiver < NUMBER_OF_SLAVES; ++receiver) {
             sendI2C(receiver);
         }
     }

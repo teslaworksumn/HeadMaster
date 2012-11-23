@@ -57,6 +57,7 @@ void DMXSetup(void)
 
 void DMXReceive(void)
 {
+    DMXState = DMXWaitBreak;
     while (DMXState != DMXDone) {
         switch (DMXState) {
             case DMXWaitBreak:
