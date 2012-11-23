@@ -27,14 +27,17 @@
 #include "DMXlib.h"
 #include <xc.h>
 
-// Constants
-enum {
-    DMXWaitBreak, DMXGotBreak, DMXWaitForStart, DMXWaitForData, DMXDone
+// Types
+
+typedef enum _DMXState {
+    DMXWaitBreak,
+    DMXGotBreak,
+    DMXWaitForStart,
+    DMXWaitForData,
+    DMXDone
 } DMXState;
 
-// Variables
-int DMXBytesReceived; //16-bit counter
-char DMXInputBuffer; //used to read RCREG to clear error conditions
+// Code
 
 void DMXSetup(void)
 {
@@ -53,12 +56,15 @@ void DMXSetup(void)
 
 void DMXReceive(DMXDevice *device)
 {
-    DMXState = DMXWaitBreak;
-    while (DMXState != DMXDone) {
-        switch (DMXState) {
+    DMXState state = DMXWaitBreak;
+    int bytesReceived = 0;
+    char sideEffectBuffer;
+
+    while (state != DMXDone) {
+        switch (state) {
             case DMXWaitBreak:
                 if (RCSTAbits.FERR){            //Framing error
-                    DMXState = DMXGotBreak;
+                    state = DMXGotBreak;
                     break;
                 } else {
                     if (RCSTAbits.OERR) {
@@ -68,38 +74,38 @@ void DMXReceive(DMXDevice *device)
                 }
                 break;
             case DMXGotBreak:
-                DMXInputBuffer = RCREG;         //Read the Receive buffer to clear FERR
-                DMXState = DMXWaitForStart;
+                sideEffectBuffer = RCREG;         //Read the Receive buffer to clear FERR
+                state = DMXWaitForStart;
                 break;
             case DMXWaitForStart:
                 while (!PIR1bits.RCIF) ;        //Wait until a byte has been received
                 if (RCSTAbits.FERR) {
-                    DMXState = DMXGotBreak;
+                    state = DMXGotBreak;
 			        break;
 		        } else {
-			        DMXInputBuffer = RCREG;     //Read the Receive buffer
+			        sideEffectBuffer = RCREG;     //Read the Receive buffer
 		        }
-                if (DMXInputBuffer != DMX_START_CODE) { //if current byte isn't START code, ignore the frame
-                    DMXState = DMXWaitBreak;
+                if (sideEffectBuffer != DMX_START_CODE) { //if current byte isn't START code, ignore the frame
+                    state = DMXWaitBreak;
                     break;
                 }
                 else {
-                    DMXBytesReceived = 0;	        //initialize counter
-                    DMXState = DMXWaitForData;
+                    bytesReceived = 0;	        //initialize counter
+                    state = DMXWaitForData;
                     break;
                 }
             case DMXWaitForData:
                 if (RCSTAbits.FERR) {	        //If a new framing error is detected (error or short frame)
-                    DMXState = DMXWaitBreak;	// the rest of the frame is ignored and a new synchronization
+                    state = DMXWaitBreak;	// the rest of the frame is ignored and a new synchronization
         	        break;                      //is attempted
     	        }
                 if (PIR1bits.RCIF) {	        //Wait until a byte is correctly received
-    	            device->buffer[DMXBytesReceived++] = RCREG;
-        	        if (DMXBytesReceived < device->startChannel + device->bufferSize) {
-                        DMXState = DMXWaitForData;
+    	            device->buffer[bytesReceived++] = RCREG;
+        	        if (bytesReceived < device->startChannel + device->bufferSize) {
+                        state = DMXWaitForData;
                         break;
                     } else {
-                        DMXState = DMXDone;
+                        state = DMXDone;
                         break;
                     }
                 }
