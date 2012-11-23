@@ -137,6 +137,7 @@ void main(void)
 
     Setup();
     DMXSetup();
+    DMXStartChannel = ReadDMXStartChannel();
     while(1)
     {
 		DMXReceive();
