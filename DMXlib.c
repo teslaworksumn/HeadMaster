@@ -102,7 +102,7 @@ void DMXReceive(void)
     	        }
                 while (!PIR1bits.RCIF) ;        //Wait until a byte is correctly received
     	        DMXBuffer[DMXBytesReceived++] = RCREG;
-        	    if (DMXBytesReceived < DMX_BUFFER_SIZE) {
+        	    if (DMXBytesReceived < DMXEndChannel) {
                     DMXState = DMXWaitForData;
                     break;
                 } else {

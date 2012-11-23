@@ -141,6 +141,7 @@ void main(void)
     Setup();
     DMXSetup();
     DMXStartChannel = ReadDMXStartChannel();
+    DMXEndChannel = DMXStartChannel - 1 + (NUMBER_OF_SLAVES * BYTES_PER_SLAVE);
     while(1)
     {
 		DMXReceive();
