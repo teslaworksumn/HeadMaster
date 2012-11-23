@@ -33,6 +33,7 @@ enum {
 } DMXState;
 
 // Variables
+int DMXCurrentChannel;
 int DMXBytesReceived; //16-bit counter
 char DMXInputBuffer; //used to read RCREG to clear error conditions
 
@@ -58,6 +59,7 @@ void DMXSetup(void)
 void DMXReceive(void)
 {
     DMXState = DMXWaitBreak;
+    DMXCurrentChannel = 0;
     while (DMXState != DMXDone) {
         switch (DMXState) {
             case DMXWaitBreak:
