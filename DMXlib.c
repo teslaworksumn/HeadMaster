@@ -61,6 +61,12 @@ void DMXReceive(DMXDevice *device)
     int bufferIndex = 0;
     char tmp;
 
+    // Cache device characteristics for performance
+    // Only FSR is available for pointers. We cache these so we can reserve the pointer FSR for using dmxBuffer.
+    char *dmxBuffer = device->buffer;
+    int startChannel = device->startChannel;
+    int bufferSize = device->bufferSize;
+
     while (state != DMXDone) {
         switch (state) {
             case DMXWaitBreak:
@@ -102,11 +108,11 @@ void DMXReceive(DMXDevice *device)
         	        break;                      //is attempted
     	        }
                 if (PIR1bits.RCIF) {	        //Wait until a byte is correctly received
-                    if (startCounter < device->startChannel) {
+                    if (startCounter < startChannel) {
                         tmp = RCREG;            // Clear RCIF;
                         startCounter++;
-                    } else if (bufferIndex < device->bufferSize) {
-                        device->buffer[bufferIndex] = RCREG;
+                    } else if (bufferIndex < bufferSize) {
+                        dmxBuffer[bufferIndex] = RCREG;
                         bufferIndex++;
                     } else {
                         state = DMXDone;
