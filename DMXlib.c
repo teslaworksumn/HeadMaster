@@ -59,7 +59,7 @@ void DMXReceive(DMXDevice *device)
     DMXState state = DMXWaitBreak;
     int startCounter = 0;
     int bufferIndex = 0;
-    char sideEffectBuffer;
+    char tmp;
 
     while (state != DMXDone) {
         switch (state) {
@@ -75,7 +75,7 @@ void DMXReceive(DMXDevice *device)
                 }
                 break;
             case DMXGotBreak:
-                sideEffectBuffer = RCREG;         //Read the Receive buffer to clear FERR
+                tmp = RCREG;                    //Read the Receive buffer to clear FERR
                 state = DMXWaitForStart;
                 break;
             case DMXWaitForStart:
@@ -84,9 +84,9 @@ void DMXReceive(DMXDevice *device)
                     state = DMXGotBreak;
 			        break;
 		        } else {
-			        sideEffectBuffer = RCREG;     //Read the Receive buffer
+			        tmp = RCREG;                //Read the Receive buffer
 		        }
-                if (sideEffectBuffer != DMX_START_CODE) { //if current byte isn't START code, ignore the frame
+                if (tmp != DMX_START_CODE) {    //if current byte isn't START code, ignore the frame
                     state = DMXWaitBreak;
                     break;
                 }
@@ -103,7 +103,7 @@ void DMXReceive(DMXDevice *device)
     	        }
                 if (PIR1bits.RCIF) {	        //Wait until a byte is correctly received
                     if (startCounter < device->startChannel) {
-                        sideEffectBuffer = RCREG;   // Clear RCIF;
+                        tmp = RCREG;            // Clear RCIF;
                         startCounter++;
                     } else if (bufferIndex < device->bufferSize) {
                         device->buffer[bufferIndex] = RCREG;
