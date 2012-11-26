@@ -84,6 +84,31 @@ __interrupt(high_priority) void HighPriorityInterrupt(void)
 // Code
 //
 
+int ReadDMXStartChannel(void);
+
+int ReadDMXStartChannel(void)
+{
+    int dmxAddress = 0;
+    
+    if (!PORTAbits.RA5) {
+        dmxAddress += 16;
+    }
+    if (!PORTAbits.RA3) {
+        dmxAddress += 32;
+    }
+    if (!PORTAbits.RA2) {
+        dmxAddress += 64;
+    }
+    if (!PORTAbits.RA1) {
+        dmxAddress += 128;
+    }
+    if (!PORTAbits.RA0) {
+        dmxAddress += 256;
+    }
+
+    return dmxAddress;
+}
+
 void mapDmxToServo(char *dmx, char numberToMap)
 {
     MVRightShift(dmx, numberToMap, SERVO_BIT_OFFSET);
@@ -129,6 +154,7 @@ void main(void)
     while(1)
     {
 		DMXReceive(&dmxDevice);
+		mapDmxToServo(DMXBuffer + DMXStartChannel, NUMBER_OF_SLAVES * BYTES_PER_SLAVE);
         for (receiver = 0; receiver < NUMBER_OF_SLAVES; ++receiver) {
             sendI2C(receiver);
         }
