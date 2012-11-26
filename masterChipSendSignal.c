@@ -154,7 +154,7 @@ void main(void)
     while(1)
     {
 		DMXReceive(&dmxDevice);
-		mapDmxToServo(DMXBuffer + DMXStartChannel, NUMBER_OF_SLAVES * BYTES_PER_SLAVE);
+		mapDmxToServo(dmxDevice.buffer, dmxDevice.bufferSize);
         for (receiver = 0; receiver < NUMBER_OF_SLAVES; ++receiver) {
             sendI2C(receiver);
         }
