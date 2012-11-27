@@ -13,7 +13,11 @@ This repository will contain the code for our master microcontroller for the Ani
 There will be __4__ slave PWM chips. We think it will be possible to have *no slave microcontrollers*, only I2C slave PWM chips.  
 For more information about these chips, visit the [wiki].
 
+Hardware
+--------
 
+Our only target is the PIC18F2685 microcontroller from Microchip.  
+For more information about hardware, visit the [wiki].
 
 Compiling
 ---------
