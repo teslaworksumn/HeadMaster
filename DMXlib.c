@@ -33,6 +33,7 @@ enum {
 } DMXState;
 
 // Variables
+int DMXCurrentChannel;
 int DMXBytesReceived; //16-bit counter
 char DMXInputBuffer; //used to read RCREG to clear error conditions
 
@@ -58,6 +59,7 @@ void DMXSetup(void)
 void DMXReceive(void)
 {
     DMXState = DMXWaitBreak;
+    DMXCurrentChannel = 0;
     while (DMXState != DMXDone) {
         switch (DMXState) {
             case DMXWaitBreak:
@@ -79,6 +81,7 @@ void DMXReceive(void)
                 while (!PIR1bits.RCIF) ;        //Wait until a byte has been received
                 if (RCSTAbits.FERR) {
                     DMXState = DMXGotBreak;
+                    PIR1bits.RCIF = 0;          //Reset the received flag
 			        break;
 		        } else {
 			        DMXInputBuffer = RCREG;     //Read the Receive buffer
@@ -94,18 +97,17 @@ void DMXReceive(void)
                 }
             case DMXWaitForData:
                 if (RCSTAbits.FERR) {	        //If a new framing error is detected (error or short frame)
-                    DMXState = DMXWaitBreak;	// the rest of the frame is ignored and a new synchronization
-        	        break;                      //is attempted
+                    DMXState = DMXDone;	        // the rest of the frame is ignored and the function exits
+        	        break;
     	        }
-                if (PIR1bits.RCIF) {	        //Wait until a byte is correctly received
-    	            DMXBuffer[DMXBytesReceived++] = RCREG;
-        	        if (DMXBytesReceived < DMX_BUFFER_SIZE) {
-                        DMXState = DMXWaitForData;
-                        break;
-                    } else {
-                        DMXState = DMXDone;
-                        break;
-                    }
+                while (!PIR1bits.RCIF) ;        //Wait until a byte is correctly received
+    	        DMXBuffer[DMXBytesReceived++] = RCREG;
+        	    if (DMXBytesReceived < DMXEndChannel) {
+                    DMXState = DMXWaitForData;
+                    break;
+                } else {
+                    DMXState = DMXDone;
+                    break;
                 }
                 break;
             case DMXDone:

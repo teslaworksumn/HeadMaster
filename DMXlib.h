@@ -30,7 +30,8 @@
  
  // Variables
 char DMXBuffer[DMX_BUFFER_SIZE];
-int DMXStartChannel = 0;
+int DMXStartChannel = 1;
+int DMXEndChannel = 512;
 
 // Functions
 void DMXSetup(void);
