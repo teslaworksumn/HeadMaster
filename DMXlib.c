@@ -27,21 +27,20 @@
 #include "DMXlib.h"
 #include <xc.h>
 
-// Constants
-enum {
-    DMXWaitBreak, DMXGotBreak, DMXWaitForStart, DMXWaitForData, DMXDone
+// Types
+
+typedef enum _DMXState {
+    DMXWaitBreak,
+    DMXGotBreak,
+    DMXWaitForStart,
+    DMXWaitForData,
+    DMXDone
 } DMXState;
 
-// Variables
-int DMXBytesReceived; //16-bit counter
-char DMXInputBuffer; //used to read RCREG to clear error conditions
+// Code
 
 void DMXSetup(void)
 {
-    for (int i = 0; i < DMX_BUFFER_SIZE; i++) { //Clear the receive buffer
-        DMXBuffer[i] = 0;
-    }
-
     TRISCbits.TRISC7 = 1;	//Allow the EUSART RX to control pin RC7
     TRISCbits.TRISC6 = 1;	//Allow the EUSART RX to control pin RC6
 
@@ -55,14 +54,24 @@ void DMXSetup(void)
     RCSTA = 0x90;			//Enable serial port and reception
 }
 
-void DMXReceive(void)
+void DMXReceive(DMXDevice *device)
 {
-    DMXState = DMXWaitBreak;
-    while (DMXState != DMXDone) {
-        switch (DMXState) {
+    DMXState state = DMXWaitBreak;
+    int startCounter = 0;
+    int bufferIndex = 0;
+    char tmp;
+
+    // Cache device characteristics for performance
+    // Only FSR is available for pointers. We cache these so we can reserve the pointer FSR for using dmxBuffer.
+    char *dmxBuffer = device->buffer;
+    int startChannel = device->startChannel;
+    int bufferSize = device->bufferSize;
+
+    while (state != DMXDone) {
+        switch (state) {
             case DMXWaitBreak:
                 if (RCSTAbits.FERR){            //Framing error
-                    DMXState = DMXGotBreak;
+                    state = DMXGotBreak;
                     break;
                 } else {
                     if (RCSTAbits.OERR) {
@@ -72,39 +81,41 @@ void DMXReceive(void)
                 }
                 break;
             case DMXGotBreak:
-                DMXInputBuffer = RCREG;         //Read the Receive buffer to clear FERR
-                DMXState = DMXWaitForStart;
+                tmp = RCREG;                    //Read the Receive buffer to clear FERR
+                state = DMXWaitForStart;
                 break;
             case DMXWaitForStart:
                 while (!PIR1bits.RCIF) ;        //Wait until a byte has been received
                 if (RCSTAbits.FERR) {
-                    DMXState = DMXGotBreak;
+                    state = DMXGotBreak;
 			        break;
 		        } else {
-			        DMXInputBuffer = RCREG;     //Read the Receive buffer
+			        tmp = RCREG;                //Read the Receive buffer
 		        }
-                if (DMXInputBuffer != DMX_START_CODE) { //if current byte isn't START code, ignore the frame
-                    DMXState = DMXWaitBreak;
+                if (tmp != DMX_START_CODE) {    //if current byte isn't START code, ignore the frame
+                    state = DMXWaitBreak;
                     break;
                 }
                 else {
-                    DMXBytesReceived = 0;	        //initialize counter
-                    DMXState = DMXWaitForData;
+                    startCounter = 0;	        //initialize counter
+                    bufferIndex = 0;
+                    state = DMXWaitForData;
                     break;
                 }
             case DMXWaitForData:
                 if (RCSTAbits.FERR) {	        //If a new framing error is detected (error or short frame)
-                    DMXState = DMXWaitBreak;	// the rest of the frame is ignored and a new synchronization
+                    state = DMXWaitBreak;	// the rest of the frame is ignored and a new synchronization
         	        break;                      //is attempted
     	        }
                 if (PIR1bits.RCIF) {	        //Wait until a byte is correctly received
-    	            DMXBuffer[DMXBytesReceived++] = RCREG;
-        	        if (DMXBytesReceived < DMX_BUFFER_SIZE) {
-                        DMXState = DMXWaitForData;
-                        break;
+                    if (startCounter < startChannel) {
+                        tmp = RCREG;            // Clear RCIF;
+                        startCounter++;
+                    } else if (bufferIndex < bufferSize) {
+                        dmxBuffer[bufferIndex] = RCREG;
+                        bufferIndex++;
                     } else {
-                        DMXState = DMXDone;
-                        break;
+                        state = DMXDone;
                     }
                 }
                 break;
