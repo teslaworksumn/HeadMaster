@@ -39,11 +39,11 @@
 #pragma config PWRT = OFF       // Power-up timer
 #pragma config WDT = OFF        // Watch dog timer (off)
 #pragma config WDTPS = 32768    // WDT post-scaler (don't care)
-//#pragma config CCP2MX = PORTC   // CCP2 mux bit: either PORTC or PORTBE
 #pragma config PBADEN = OFF     // PortB A/D Enable bit
 #pragma config LPT1OSC = OFF    // Low-Power Timer1 Oscillator
 #pragma config MCLRE = ON       // MCLR pin enabled
 #pragma config STVREN = ON      // Stack full/underflow will cause reset when ON
+#pragma config BBSIZ = 1024     // Boot Block size (1K words/2K bytes)
 #pragma config LVP = OFF        // Single-supply ICSP Enable bit
 #pragma config XINST = OFF      // Extended Instruction Set Enable bit
 
@@ -52,12 +52,16 @@
 #pragma config CP1 = OFF
 #pragma config CP2 = OFF
 #pragma config CP3 = OFF
+#pragma config CP4 = OFF
+#pragma config CP5 = OFF
 #pragma config CPD = OFF
 #pragma config CPB = OFF
 #pragma config WRT0 = OFF
 #pragma config WRT1 = OFF
 #pragma config WRT2 = OFF
 #pragma config WRT3 = OFF
+#pragma config WRT4 = OFF
+#pragma config WRT5 = OFF
 #pragma config WRTB = OFF
 #pragma config WRTC = OFF
 #pragma config WRTD = OFF
@@ -65,6 +69,8 @@
 #pragma config EBTR1 = OFF
 #pragma config EBTR2 = OFF
 #pragma config EBTR3 = OFF
+#pragma config EBTR4 = OFF
+#pragma config EBTR5 = OFF
 #pragma config EBTRB = OFF
 
 // Defines
