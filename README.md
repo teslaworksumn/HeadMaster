@@ -17,6 +17,7 @@ Hardware
 --------
 
 Our only target is the PIC18F2685 microcontroller from Microchip.  
+Instruction frequency is 10 MIPS (`Fosc` = 40MHz, `Tcy` = 100ns).  
 For more information about hardware, visit the [wiki].
 
 Compiling
