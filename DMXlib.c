@@ -43,9 +43,9 @@ void DMXSetup(void)
 {
     // SYNC = 0, BRG16 = 1, BRGH = 1
     // BRG/EUSART mode: 16-bit asynchronous
-    // Baud rate formula: BAUD = Fosc / (4 ( [SPBRGH:SPBRG] + 1))
-    // 250 KHz = 40 MHz / (4 x + 1)
-    // 4x + 1 = 40 MHz / 250 KHz = 160 
+    // Baud rate formula: BAUD = Fosc / (4 * ([SPBRGH:SPBRG] + 1))
+    // 250 KHz = 40 MHz / (4 (x + 1))
+    // 4(x + 1) = 40 MHz / 250 KHz = 160
     // x = 39
     
     // Allow the EUSART RX to control pin RC7
