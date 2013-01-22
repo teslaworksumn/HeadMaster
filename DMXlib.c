@@ -41,19 +41,22 @@ typedef enum _DMXState {
 
 void DMXSetup(void)
 {
-    TRISCbits.TRISC7 = 1;    // Allow the EUSART RX to control pin RC7
-    TRISCbits.TRISC6 = 1;    // Allow the EUSART RX to control pin RC6
-
-    BAUDCONbits.BRG16 = 1;   // Enable EUSART for 16-bit Asynchronous operation
-    SPBRGH = 0;
-    
-    // FIXME: THIS is where we have to change baudrate
-    SPBRG = 31;             // Baud rate is 250KHz for 32MHz Osc. freq.
-    
     // SYNC = 0, BRG16 = 1, BRGH = 1
     // BRG/EUSART mode: 16-bit asynchronous
     // Baud rate formula: BAUD = Fosc / (4 ( [SPBRGH:SPBRG] + 1))
-
+    // 250 KHz = 40 MHz / (4 x + 1)
+    // 4x + 1 = 40 MHz / 250 KHz = 160 
+    // x = 39
+    
+    // FIXME: Are these both RX? Which pin is TX? Fix the comment plzkthx.
+    // Allow the EUSART RX to control pin RC7
+    TRISCbits.TRISC7 = 1;
+    // Allow the EUSART RX to control pin RC6
+    TRISCbits.TRISC6 = 1;
+    
+    // Enable EUSART for 16-bit Asynchronous operation
+    BAUDCONbits.BRG16 = 1;
+    
     // Enable transmission and CLEAR high baud rate
     // TXSTA = 00000100 (SYNC = 0, BRGH = 1)
     TXSTA = 0x04;
@@ -61,6 +64,12 @@ void DMXSetup(void)
     // Enable serial port and reception
     // RCSTA = 10010000 (SPEN = 1)
     RCSTA = 0x90;
+
+    // DMX baud rate is 250KHz
+    // If Fosc = 40 MHz, SPBRGH:SPBRG must be 39
+    SPBRGH = 0;
+    SPBRG = 39;
+
 }
 
 void DMXReceive(DMXDevice *device)
