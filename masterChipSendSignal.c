@@ -123,10 +123,10 @@ void mapDmxToServo(char *dmx, char numberToMap)
 
 void Setup(DMXDevice *dmxDevice, char *dmxBuffer)
 {
-    TRISBbits.RB4 = 1; //SDA
-    TRISBbits.RB6 = 1; //SCL
+    TRISBbits.RB4 = 1; // SDA
+    TRISBbits.RB6 = 1; // SCL
 
-    //set up MSSP for master mode
+    // Set up MSSP for master mode
     SSPSTATbits.SMP = 1;
     SSPSTATbits.CKE = 1;
 
@@ -134,7 +134,8 @@ void Setup(DMXDevice *dmxDevice, char *dmxBuffer)
 
     SSPCON2 = 0b00000000;
 
-    //Baud = Fosc/(4*SSPADD+1) = ~114kHz when Fosc @ 12MHz
+    // Baud = Fosc / (4 * SSPADD + 1) = ~114kHz when Fosc @ 12MHz
+    // FIXME: Crystal @ 10 MHz, Fosc @ 40 MHz, change baud to match?
     SSPADD = 100;
 
     PIR1bits.SSPIF = 0;
