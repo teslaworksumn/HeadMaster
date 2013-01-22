@@ -48,10 +48,9 @@ void DMXSetup(void)
     // 4x + 1 = 40 MHz / 250 KHz = 160 
     // x = 39
     
-    // FIXME: Are these both RX? Which pin is TX? Fix the comment plzkthx.
     // Allow the EUSART RX to control pin RC7
     TRISCbits.TRISC7 = 1;
-    // Allow the EUSART RX to control pin RC6
+    // Allow the EUSART TX to control pin RC6
     TRISCbits.TRISC6 = 1;
     
     // Enable EUSART for 16-bit Asynchronous operation
