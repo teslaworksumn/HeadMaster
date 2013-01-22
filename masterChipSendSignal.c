@@ -135,7 +135,9 @@ void Setup(DMXDevice *dmxDevice, char *dmxBuffer)
     SSPCON2 = 0b00000000;
 
     // Baud = Fosc / (4 * SSPADD + 1) = ~114kHz when Fosc @ 12MHz
-    // FIXME: Crystal @ 10 MHz, Fosc @ 40 MHz, change baud to match?
+    // Crystal @ 10 MHz, Fosc @ 40 MHz, change baud to match?
+    // It actually shouldn't matter... I2C runs at whatever baud for the most part.
+    // If anything, we could turn the speed down to be safe
     SSPADD = 100;
 
     PIR1bits.SSPIF = 0;

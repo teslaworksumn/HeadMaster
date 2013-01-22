@@ -47,6 +47,7 @@ void DMXSetup(void)
     BAUDCONbits.BRG16 = 1; 	//Enable EUSART for 16-bit Asynchronous operation
     SPBRGH = 0;
 	
+    // FIXME: THIS is where we have to change baudrate
     SPBRG = 31; 			//Baud rate is 250KHz for 32MHz Osc. freq.
 
     TXSTA = 0x04;			//Enable transmission and CLEAR high baud rate
