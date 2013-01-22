@@ -32,8 +32,8 @@
 // Device Configuration
 
 #pragma config OSC = HSPLL      // High speed/ PLL enabled oscilator mode
-#pragma config FCMENB = OFF     // Fail-safe clock moniter 
-#pragma config IESOB = OFF      // Int/ext osc switchover (disabled)
+#pragma config FCMEN = OFF      // Fail-safe clock moniter 
+#pragma config IESO = OFF       // Int/ext osc switchover (disabled)
 #pragma config BOREN = OFF      // Brown-out reset bits disabled
 #pragma config BORV = 3         // Brown out voltage bit (min setting)
 #pragma config PWRT = OFF       // Power-up timer
