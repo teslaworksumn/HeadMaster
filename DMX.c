@@ -91,7 +91,8 @@ void DMXReceive(DMXDevice *device)
                 }
             
             case DMXWaitForData:
-                // If a new framing error is detected (error or short frame) the rest of the frame is ignored and a new synchronization is attempted
+                // If a new framing error is detected (error or short frame) the rest of the frame
+                // is ignored and a new synchronization is attempted
                 if (RCSTAbits.FERR) {
                     state = DMXWaitBreak;
                     break;
