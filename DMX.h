@@ -1,5 +1,5 @@
 //
-//  DMXlib.h
+//  DMX.h
 //  HeadMaster
 //
 //  Created by Kevan Ahlquist on 11/8/12.

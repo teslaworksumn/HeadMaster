@@ -6,7 +6,7 @@
 //  Copyright (c) 2012 Tesla Works. MIT license.
 //
 
-#include "DMXlib.h"
+#include "DMX.h"
 #include "I2C.h"
 #include "MiniVec.h"
 #include <xc.h>
