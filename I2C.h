@@ -20,6 +20,10 @@
 char buffer[NUMBER_OF_SLAVES * BYTES_PER_SLAVE] = {7}; //Assuming the DMX parsing code will output data to this array
 char slaveAddresses[NUMBER_OF_SLAVES] = {40}; //TODO: Need to hardcode slave addresses in this array
 
+// =============================================================================
+// Functions
+// =============================================================================
+
 // Sends BYTES_PER_SLAVE bytes of data from the buffer via I2C to the receiver.
 // Reciever 0: bytes 0 to BYTES_PER_SLAVE
 // Reciever 1: bytes BYTES_PER_SLAVE to (2*BYTES_PER_SLAVE - 1)

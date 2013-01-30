@@ -60,11 +60,9 @@ void DMXReceive(DMXDevice *device)
                 if (RCSTAbits.FERR){            // Framing error
                     state = DMXGotBreak;
                     break;
-                } else {
-                    if (RCSTAbits.OERR) {
-                        RCSTAbits.CREN = 0;     // Toggling CREN clears OERR flag
-                        RCSTAbits.CREN = 1;
-                    }
+                } else if (RCSTAbits.OERR) {
+                    RCSTAbits.CREN = 0;         // Toggling CREN clears OERR flag
+                    RCSTAbits.CREN = 1;
                 }
                 break;
             
@@ -81,11 +79,11 @@ void DMXReceive(DMXDevice *device)
                 } else {
                     tmp = RCREG;                // Read the receive buffer
                 }
+                
                 if (tmp != DMX_START_CODE) {    // If current byte isn't START code, ignore the frame
                     state = DMXWaitBreak;
                     break;
-                }
-                else {
+                } else {
                     startCounter = 0;            // Initialize counter
                     bufferIndex = 0;
                     state = DMXWaitForData;
@@ -93,7 +91,7 @@ void DMXReceive(DMXDevice *device)
                 }
             
             case DMXWaitForData:
-                //If a new framing error is detected (error or short frame) the rest of the frame is ignored and a new synchronization is attempted
+                // If a new framing error is detected (error or short frame) the rest of the frame is ignored and a new synchronization is attempted
                 if (RCSTAbits.FERR) {
                     state = DMXWaitBreak;
                     break;

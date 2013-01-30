@@ -1,5 +1,5 @@
 //
-//  MiniVec.c
+//  MiniVec.h
 //  HeadMaster
 //
 //  Created by Taylor Trimble on 11/11/12.
