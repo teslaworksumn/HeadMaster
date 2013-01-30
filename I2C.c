@@ -19,7 +19,7 @@ void I2CSend(int receiver)
 
     SSPCON2bits.SEN = 1;
     while (!PIR1bits.SSPIF);
-    sendByte(slaveAddresses[receiver]);
+    I2CSendByte(slaveAddresses[receiver]);
     while (!PIR1bits.SSPIF);
 
     for (i = 0; i < BYTES_PER_SLAVE; ++i) {
