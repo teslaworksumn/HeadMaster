@@ -23,8 +23,8 @@ void sendI2C(int receiver)
     while (!PIR1bits.SSPIF);
 
     for (i = 0; i < BYTES_PER_SLAVE; ++i) {
-	sendByte(buffer[BYTES_PER_SLAVE * receiver + i]);
-	while (!PIR1bits.SSPIF);
+    sendByte(buffer[BYTES_PER_SLAVE * receiver + i]);
+    while (!PIR1bits.SSPIF);
     }
 
     SSPCON2bits.PEN = 1;

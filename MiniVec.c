@@ -15,14 +15,14 @@
 
 void MVSet(char vector[], char vectorCount, char value)
 {
-	memset(vector, value, vectorCount);
+    memset(vector, value, vectorCount);
 }
 
 void MVAdd(char vector[], char vectorCount, char numberToAdd)
 {
     int index;
     for (index = 0; index < vectorCount; ++index) {
-	   vector[index] += numberToAdd;
+       vector[index] += numberToAdd;
     }
 }
 
@@ -30,6 +30,6 @@ void MVRightShift(char vector[], char vectorCount, char bitsToShift)
 {
     int index;
     for (index = 0; index < vectorCount; ++index) {
-	   vector[index] = vector[index] >> bitsToShift;
+       vector[index] = vector[index] >> bitsToShift;
     }
 }
