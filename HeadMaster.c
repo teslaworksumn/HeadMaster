@@ -1,5 +1,5 @@
 //
-//  masterChipSendSignal.c
+//  HeadMaster.c
 //  HeadMaster
 //
 //  Created by Kevan Ahlquist on 10/20/12.
@@ -70,15 +70,15 @@
 // Code
 // =============================================================================
 
-int ReadDMXStartChannel(void);
-void mapDmxToServo(char *dmx, char numberToMap);
-void Setup(DMXDevice *dmxDevice, char *dmxBuffer);
+int HMReadDMXStartChannel(void);
+void HMMapDmxToServo(char *dmx, char numberToMap);
+void HMSetup(DMXDevice *dmxDevice, char *dmxBuffer);
 
 __interrupt(high_priority) void HighPriorityInterrupt(void)
 {
 }
 
-int ReadDMXStartChannel(void)
+int HMReadDMXStartChannel(void)
 {
     int dmxAddress = 0;
     
@@ -101,13 +101,13 @@ int ReadDMXStartChannel(void)
     return dmxAddress;
 }
 
-void mapDmxToServo(char *dmx, char numberToMap)
+void HMMapDmxToServo(char *dmx, char numberToMap)
 {
     MVRightShift(dmx, numberToMap, SERVO_BIT_OFFSET);
     MVAdd(dmx, numberToMap, SERVO_VALUE_OFFSET);
 }
 
-void Setup(DMXDevice *dmxDevice, char *dmxBuffer)
+void HMSetup(DMXDevice *dmxDevice, char *dmxBuffer)
 {
     TRISBbits.RB4 = 1; // SDA
     TRISBbits.RB6 = 1; // SCL
@@ -142,14 +142,14 @@ void main(void)
     char dmxBuffer[DMX_BUFFER_SIZE];
     int receiver = 0;
 
-    Setup(&dmxDevice, dmxBuffer);
+    HMSetup(&dmxDevice, dmxBuffer);
 
     while(1)
     {
         DMXReceive(&dmxDevice);
-        mapDmxToServo(dmxDevice.buffer, dmxDevice.bufferSize);
+        HMMapDmxToServo(dmxDevice.buffer, dmxDevice.bufferSize);
         for (receiver = 0; receiver < NUMBER_OF_SLAVES; ++receiver) {
-            sendI2C(receiver);
+            I2CSend(receiver);
         }
     }
 }

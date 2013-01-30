@@ -28,7 +28,7 @@ char slaveAddresses[NUMBER_OF_SLAVES] = {40}; //TODO: Need to hardcode slave add
 // Reciever 0: bytes 0 to BYTES_PER_SLAVE
 // Reciever 1: bytes BYTES_PER_SLAVE to (2*BYTES_PER_SLAVE - 1)
 // etc.
-void sendI2C(int receiver);
+void I2CSend(int receiver);
 
 // Adds a single byte of data to the send buffer, does not wait for send completion to return
-void sendByte(char data);
+void I2CSendByte(char data);

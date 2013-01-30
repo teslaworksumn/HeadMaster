@@ -13,7 +13,7 @@
 // Code
 // =============================================================================
 
-void sendI2C(int receiver)
+void I2CSend(int receiver)
 {
     int i = 0;
 
@@ -23,15 +23,15 @@ void sendI2C(int receiver)
     while (!PIR1bits.SSPIF);
 
     for (i = 0; i < BYTES_PER_SLAVE; ++i) {
-    sendByte(buffer[BYTES_PER_SLAVE * receiver + i]);
-    while (!PIR1bits.SSPIF);
+        I2CSendByte(buffer[BYTES_PER_SLAVE * receiver + i]);
+        while (!PIR1bits.SSPIF);
     }
 
     SSPCON2bits.PEN = 1;
     PIR1bits.SSPIF = 0;
 }
 
-void sendByte(char data) {
+void I2CSendByte(char data) {
     SSPBUF = data;
     PIR1bits.SSPIF = 0;
 }
