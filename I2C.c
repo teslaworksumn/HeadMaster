@@ -3,7 +3,7 @@
 //  headmaster
 //
 //  Created by Kevan Ahlquist on 11/3/12.
-//  Copyright (c) 2012 Tesla Works. MIT license.
+//  Copyright (c) 2013 Tesla Works. MIT license.
 //
 
 #include "I2C.h"
