@@ -36,7 +36,7 @@ Compiling
 License
 -------
 
-This project is released under the MIT License. See `LICENSE`.  
-Copyright (c) 2012 Tesla Works.
+This project is released under the MIT license. See `LICENSE`.  
+Copyright (c) 2013 Tesla Works.
 
 [wiki]: https://github.com/teslaworksumn/HeadMaster/wiki

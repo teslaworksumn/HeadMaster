@@ -3,7 +3,7 @@
 //  HeadMaster
 //
 //  Created by Taylor Trimble on 11/11/12.
-//  Copyright (c) 2012 Tesla Works. MIT license.
+//  Copyright (c) 2013 Tesla Works. MIT license.
 //
 
 // =============================================================================
