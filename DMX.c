@@ -3,7 +3,7 @@
 //  HeadMaster
 //
 //  Created by Kevan Ahlquist on 11/8/12.
-//  Copyright (c) 2012 Tesla Works. MIT license.
+//  Copyright (c) 2013 Tesla Works. MIT license.
 //
 
 #include "DMX.h"
