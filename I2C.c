@@ -35,7 +35,7 @@ void I2CSend(int receiver, char *buffer)
     }
 
     SSPCON2bits.PEN = 1;
-    waitForSPIF();)
+    waitForSPIF();
 }
 
 void I2CSendByte(char data) {
