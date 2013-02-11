@@ -13,18 +13,25 @@
 // Code
 // =============================================================================
 
+// Waits for spif to clear
+void waitForSPIF(void)
+{
+    while (!PIR1bits.SSPIF);
+    PIR1bits.SSPIF = 0; 
+}
+
 void I2CSend(int receiver)
 {
     int i = 0;
 
     SSPCON2bits.SEN = 1;
-    while (!PIR1bits.SSPIF);
+
     I2CSendByte(slaveAddresses[receiver]);
-    while (!PIR1bits.SSPIF);
+    waitForSPIF();
 
     for (i = 0; i < BYTES_PER_SLAVE; ++i) {
         I2CSendByte(buffer[BYTES_PER_SLAVE * receiver + i]);
-        while (!PIR1bits.SSPIF);
+        waitForSPIF();
     }
 
     SSPCON2bits.PEN = 1;
@@ -33,5 +40,5 @@ void I2CSend(int receiver)
 
 void I2CSendByte(char data) {
     SSPBUF = data;
-    PIR1bits.SSPIF = 0;
+
 }
