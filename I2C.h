@@ -25,6 +25,6 @@ char slaveAddresses[NUMBER_OF_SLAVES] = {40};
 // =============================================================================
 
 
-void I2CSend(int receiver);
+void I2CSend(int receiver, char *buffer);
 
 void I2CSendByte(char data);
