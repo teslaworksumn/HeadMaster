@@ -19,7 +19,7 @@ void I2CSend(char *buffer, int receiver)
 
     SSPCON2bits.SEN = 1;
 
-    I2CSendByte(slaveAddresses[receiver]);
+    I2CSendByte(receiver);
     waitForSPIF();
 
     for (i = 0; i < BYTES_PER_SLAVE; ++i) {

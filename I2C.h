@@ -17,7 +17,6 @@
 // Global Variables
 // =============================================================================
 
-char buffer[NUMBER_OF_SLAVES * BYTES_PER_SLAVE] = {7}; //Assuming the DMX parsing code will output data to this array
 char slaveAddresses[NUMBER_OF_SLAVES] = {0, 1, 2, 3};
 
 // =============================================================================
