@@ -27,7 +27,8 @@ void I2CSend(char *buffer, int receiver)
     I2CSendByte(receiver);      // Send reciever address
     
     // Send data for that reciever
-    for (i = 0; i < BYTES_PER_SLAVE; ++i) {
+    for (i = 0; i < BYTES_PER_SLAVE; ++i)
+    {
         I2CSendByte(buffer[BYTES_PER_SLAVE * receiver + i]);
     }
 
