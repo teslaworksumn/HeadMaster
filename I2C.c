@@ -13,6 +13,10 @@
 // Code
 // =============================================================================
 
+void I2CSend(char *buffer, int receiver);
+void I2CSendByte(char data);
+void I2CWaitForTransmission();
+
 void I2CSend(char *buffer, int receiver)
 {
     int i = 0;
@@ -31,7 +35,7 @@ void I2CSend(char *buffer, int receiver)
     I2CWaitForTransmission();
 }
 
-void I2CSendByte(char data) 
+void I2CSendByte(char data)
 {
     SSPBUF = data;
     I2CWaitForTransmission();
@@ -40,5 +44,5 @@ void I2CSendByte(char data)
 void I2CWaitForTransmission(void)
 {
     while (!PIR1bits.SSPIF);
-    PIR1bits.SSPIF = 0; 
+    PIR1bits.SSPIF = 0;
 }
