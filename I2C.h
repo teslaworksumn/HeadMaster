@@ -26,4 +26,4 @@ void I2CSend(char *buffer, int receiver);
 
 void I2CSendByte(char data);
 
-void waitForSPIF(void);
+void I2CWaitForTransmission(void);
