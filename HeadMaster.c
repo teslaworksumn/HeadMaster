@@ -146,7 +146,7 @@ void main(void)
         DMXReceive(&dmxDevice);
         HMMapDmxToServo(dmxDevice.buffer, dmxDevice.bufferSize);
         for (receiver = 0; receiver < NUMBER_OF_SLAVES; ++receiver) {
-            I2CSend(receiver);
+            I2CSend(dmxDevice.buffer, receiver);
         }
     }
 }
