@@ -20,7 +20,7 @@ void waitForSPIF(void)
     PIR1bits.SSPIF = 0; 
 }
 
-void I2CSend(int receiver, char *buffer)
+void I2CSend(char *buffer, int receiver)
 {
     int i = 0;
 
