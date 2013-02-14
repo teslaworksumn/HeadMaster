@@ -28,3 +28,5 @@ char slaveAddresses[NUMBER_OF_SLAVES] = {0, 1, 2, 3};
 void I2CSend(char *buffer, int receiver);
 
 void I2CSendByte(char data);
+
+void waitForSPIF(void);
