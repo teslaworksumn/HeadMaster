@@ -13,25 +13,37 @@
 // Code
 // =============================================================================
 
-void I2CSend(int receiver)
+void I2CSend(char *buffer, int receiver);
+void I2CSendByte(char data);
+void I2CWaitForTransmission();
+
+void I2CSend(char *buffer, int receiver)
 {
     int i = 0;
 
-    SSPCON2bits.SEN = 1;
-    while (!PIR1bits.SSPIF);
-    I2CSendByte(slaveAddresses[receiver]);
-    while (!PIR1bits.SSPIF);
-
-    for (i = 0; i < BYTES_PER_SLAVE; ++i) {
+    SSPCON2bits.SEN = 1;        // Send Start bit
+    I2CWaitForTransmission();
+    
+    I2CSendByte(receiver);      // Send reciever address
+    
+    // Send data for that reciever
+    for (i = 0; i < BYTES_PER_SLAVE; ++i)
+    {
         I2CSendByte(buffer[BYTES_PER_SLAVE * receiver + i]);
-        while (!PIR1bits.SSPIF);
     }
 
-    SSPCON2bits.PEN = 1;
-    PIR1bits.SSPIF = 0;
+    SSPCON2bits.PEN = 1;        // Send Stop bit
+    I2CWaitForTransmission();
 }
 
-void I2CSendByte(char data) {
+void I2CSendByte(char data)
+{
     SSPBUF = data;
+    I2CWaitForTransmission();
+}
+
+void I2CWaitForTransmission(void)
+{
+    while (!PIR1bits.SSPIF);
     PIR1bits.SSPIF = 0;
 }

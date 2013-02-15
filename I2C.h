@@ -14,17 +14,7 @@
 #define BYTES_PER_SLAVE 8
 
 // =============================================================================
-// Global Variables
-// =============================================================================
-
-char buffer[NUMBER_OF_SLAVES * BYTES_PER_SLAVE] = {7}; //Assuming the DMX parsing code will output data to this array
-char slaveAddresses[NUMBER_OF_SLAVES] = {40};
-
-// =============================================================================
 // Functions
 // =============================================================================
 
-
-void I2CSend(int receiver);
-
-void I2CSendByte(char data);
+void I2CSend(char *buffer, int receiver);
