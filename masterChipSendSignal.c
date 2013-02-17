@@ -159,8 +159,8 @@ void main(void)
 
     while(1)
     {
-		DMXReceive(&dmxDevice);
-		mapDmxToServo(dmxDevice.buffer, dmxDevice.bufferSize);
+        DMXReceive(&dmxDevice);
+        mapDmxToServo(dmxDevice.buffer, dmxDevice.bufferSize);
         for (receiver = 0; receiver < NUMBER_OF_SLAVES; ++receiver) {
             sendI2C(receiver);
         }
