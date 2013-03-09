@@ -8,6 +8,7 @@
 
 #include "DMX.h"
 #include "I2C.h"
+#include "LED.h"
 #include "MiniVec.h"
 #include <xc.h>
 
