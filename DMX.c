@@ -63,6 +63,7 @@ void DMXReceive(DMXDevice *device)
                 } else if (RCSTAbits.OERR) {
                     RCSTAbits.CREN = 0;         // Toggling CREN clears OERR flag
                     RCSTAbits.CREN = 1;
+                    PORTB |= 8;
                 }
                 break;
             
