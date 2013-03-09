@@ -1,8 +1,8 @@
 //
-//  I2C.h
+//  DMX.h
 //  HeadMaster
 //
-//  Created by Kevan Ahlquist on 11/3/12.
+//  Created by Kevan Ahlquist on 11/8/12.
 //  Copyright (c) 2013 Tesla Works. MIT license.
 //
 
@@ -10,11 +10,21 @@
 // Defines
 // =============================================================================
 
-#define NUMBER_OF_SLAVES 4
-#define BYTES_PER_SLAVE 8
+#define DMX_START_CODE 0x00
+
+// =============================================================================
+// Types
+// =============================================================================
+
+typedef struct _DMXDevice {
+    char *buffer;
+    int startChannel;
+    int bufferSize;
+} DMXDevice;
 
 // =============================================================================
 // Functions
 // =============================================================================
 
-void I2CSend(char *buffer, int receiver);
+void DMXSetup(void);
+void DMXReceive(DMXDevice *device);
