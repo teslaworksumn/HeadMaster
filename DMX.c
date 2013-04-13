@@ -57,9 +57,14 @@ void DMXReceive(DMXDevice *device)
     while (state != DMXDone) {
         switch (state) {
             case DMXWaitBreak:
-                if (RCSTAbits.FERR){            // Framing error
+                // Throw away good data - we aren't ready to start yet!
+                if (PIR1bits.RCIF) {
+                    tmp = RCREG;
+                }
+
+                // We are waiting for our break signal, which we detect with a framing error
+                if (RCSTAbits.FERR) {
                     state = DMXGotBreak;
-                    break;
                 } else if (RCSTAbits.OERR) {
                     RCSTAbits.CREN = 0;         // Toggling CREN clears OERR flag
                     RCSTAbits.CREN = 1;
@@ -67,7 +72,7 @@ void DMXReceive(DMXDevice *device)
                 break;
             
             case DMXGotBreak:
-                tmp = RCREG;                    // Read the receive buffer to clear FERR
+                tmp = RCREG;                    // Read the receive buffer to clear FERR - just has junk data anyway
                 state = DMXWaitForStart;
                 break;
             
@@ -76,15 +81,14 @@ void DMXReceive(DMXDevice *device)
                 if (RCSTAbits.FERR) {
                     state = DMXGotBreak;
                     break;
-                } else {
-                    tmp = RCREG;                // Read the receive buffer
                 }
-                
+
+                tmp = RCREG;                    // Read the receive buffer
                 if (tmp != DMX_START_CODE) {    // If current byte isn't START code, ignore the frame
                     state = DMXWaitBreak;
                     break;
                 } else {
-                    startCounter = 0;            // Initialize counter
+                    startCounter = 0;           // Initialize counter
                     bufferIndex = 0;
                     state = DMXWaitForData;
                     break;
