@@ -111,7 +111,6 @@ void HMSetup(DMXDevice *dmxDevice, char *dmxBuffer)
 {
     TRISBbits.RB4 = 1; // SDA
     TRISBbits.RB6 = 1; // SCL
-    TRISB = 0xF0;
 
     // Set up MSSP for master mode
     SSPSTATbits.SMP = 1;
@@ -141,20 +140,13 @@ void main(void)
     int receiver = 0;
 
     HMSetup(&dmxDevice, dmxBuffer);
-    PORTB = 0;
 
-    int testI = 0;
     while(1)
     {
-        PORTB |= 1;
         DMXReceive(&dmxDevice);
-        PORTB |= 2;
-        testI++;
-        if (testI >= 2)
-            PORTB |= 4;
-//        HMMapDmxToServo(dmxDevice.buffer, dmxDevice.bufferSize);
-//        for (receiver = 0; receiver < NUMBER_OF_SLAVES; ++receiver) {
-//            I2CSend(dmxDevice.buffer, receiver);
-//        }
+        HMMapDmxToServo(dmxDevice.buffer, dmxDevice.bufferSize);
+        for (receiver = 0; receiver < NUMBER_OF_SLAVES; ++receiver) {
+            I2CSend(dmxDevice.buffer, receiver);
+        }
     }
 }
