@@ -142,10 +142,10 @@ void main(void)
 
     HMSetup(&dmxDevice, dmxBuffer);
     PORTB = 0;
-    
+
+    int testI = 0;
     while(1)
     {
-        int testI = 0;
         PORTB |= 1;
         DMXReceive(&dmxDevice);
         PORTB |= 2;
