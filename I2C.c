@@ -23,8 +23,11 @@ void I2CSend(char *buffer, int receiver)
 
     SSPCON2bits.SEN = 1;        // Send Start bit
     I2CWaitForTransmission();
-    
-    I2CSendByte(receiver);      // Send reciever address
+
+    // Shift receiver address left by one because our I2C implementation
+    // uses 7-bit addressing, not 8-bit. Don't forget to set up the logic
+    // analyzer to read I2C in 7-bit mode!
+    I2CSendByte(receiver << 1);      // Send reciever address
     
     // Send data for that reciever
     for (i = 0; i < BYTES_PER_SLAVE; ++i)
